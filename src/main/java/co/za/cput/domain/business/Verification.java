@@ -8,7 +8,6 @@ import java.util.Date;
 public class Verification {
 
     private String verificationID;
-    private String referenceID;
     private Date verificationDate;
     private VerificationStatus status;
 
@@ -22,17 +21,12 @@ public class Verification {
 
     private Verification(Builder builder) {
         this.verificationID = builder.verificationID;
-        this.referenceID = builder.referenceID;
         this.verificationDate = builder.verificationDate;
         this.status = builder.status;
     }
 
     public String getVerificationID() {
         return verificationID;
-    }
-
-    public String getReferenceID() {
-        return referenceID;
     }
 
     public Date getVerificationDate() {
@@ -47,7 +41,6 @@ public class Verification {
     public String toString() {
         return "Verification{" +
                 "verificationID='" + getVerificationID() + '\'' +
-                ", referenceID='" + getReferenceID() + '\'' +
                 ", verificationDate=" + getVerificationDate() +
                 ", status=" + getStatus() +
                 '}';
@@ -55,17 +48,11 @@ public class Verification {
 
     public static class Builder {
         private String verificationID;
-        private String referenceID;
         private Date verificationDate;
         private VerificationStatus status;
 
         public Builder setVerificationID(String verificationID) {
             this.verificationID = verificationID;
-            return this;
-        }
-
-        public Builder setReferenceID(String referenceID) {
-            this.referenceID = referenceID;
             return this;
         }
 
@@ -81,7 +68,6 @@ public class Verification {
 
         public Builder copy(Verification verification) {
             this.verificationID = verification.getVerificationID();
-            this.referenceID = verification.getReferenceID();
             this.verificationDate = verification.getVerificationDate();
             this.status = verification.getStatus();
             return this;

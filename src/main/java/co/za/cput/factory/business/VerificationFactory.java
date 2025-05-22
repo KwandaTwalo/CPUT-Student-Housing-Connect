@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class VerificationFactory {
 
-    public static Verification createVerification(String referenceID, Date verificationDate, Verification.VerificationStatus status) {
+    public static Verification createVerification( Date verificationDate, Verification.VerificationStatus status) {
         String verificationID = UUID.randomUUID().toString();
 
         if (!Helper.validateRequestDate(verificationDate))  {
@@ -19,7 +19,6 @@ public class VerificationFactory {
 
         return new Verification.Builder()
                 .setVerificationID(verificationID)
-                .setReferenceID(referenceID)
                 .setVerificationDate(verificationDate)
                 .setStatus(status)
                 .build();
