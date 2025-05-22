@@ -1,4 +1,4 @@
 package co.za.cput.factory.generic;
 
-public class Contact {
+public class ContactFactory {
 }
