@@ -1,5 +1,9 @@
 package co.za.cput.domain.users;
 
+//Firstname:        Sinhle Xiluva
+//LastName:         Mthethwa
+//Student Number:   221802797.
+
 import co.za.cput.domain.business.Accomodation;
 
 public class Landlord {
@@ -10,7 +14,7 @@ public class Landlord {
     private String landlordEmail;
     private String landlordPhone;
 
-    public Landlord() {}
+    private Landlord() {}
 
     private Landlord (Landlord.Builder builder){
 

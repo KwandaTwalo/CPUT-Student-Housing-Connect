@@ -1,35 +1,36 @@
 package co.za.cput.domain.business;
 
+//Firstname:        Sinhle Xiluva
+//LastName:         Mthethwa
+//Student Number:   221802797.
+
+
 public class Accomodation {
 
         private String accomodationID;
-        private String accomodationName;
         private String rent;
         private String roomType;
-        private String availabilityStatus;
+        private AccomodationStatus status;
         private String location;
 
+    public enum AccomodationStatus {
+        AVAILABLE,
+        FULL,
+    }
 
-        public Accomodation() {
-        }
 
         private Accomodation(Accomodation.Builder builder) {
 
             this.accomodationID = builder.accomodationID;
-            this.accomodationName = builder.accomodationName;
             this.rent = builder.rent;
             this.roomType = builder.roomType;
-            this.availabilityStatus = builder.availabilityStatus;
+            this.status = builder.status;
             this.location = builder.location;
         }
 
         public String getAccomodationID() {
             return accomodationID;
         }
-
-    public String getAccomodationName() {
-        return accomodationName;
-    }
 
     public String getRent() {
             return rent;
@@ -39,8 +40,8 @@ public class Accomodation {
             return roomType;
         }
 
-        public String getAvailabilityStatus() {
-            return availabilityStatus;
+        public AccomodationStatus getStatus() {
+            return status;
         }
 
         public String getLocation() {
@@ -52,19 +53,17 @@ public class Accomodation {
             public String toString() {
                 return "Builder{" +
                         "accomodationID='" + accomodationID + '\'' +
-                        ", accomodationName='" + accomodationName + '\'' +
                         ", rent='" + rent + '\'' +
                         ", roomType='" + roomType + '\'' +
-                        ", availabilityStatus='" + availabilityStatus + '\'' +
+                        ",  status=" + getStatus() + "\n" +
                         ", location='" + location + '\'' +
                         '}';
             }
             public static class Builder {
                 private String accomodationID;
-                private String accomodationName;
                 private String rent;
                 private String roomType;
-                private String availabilityStatus;
+                private AccomodationStatus status;
                 private String location;
 
 
@@ -83,13 +82,8 @@ public class Accomodation {
                 return this;
             }
 
-            public Builder setAccomodationName(String accomodationName) {
-                this.accomodationName = accomodationName;
-                return this;
-            }
-
-            public Builder setAvailabilityStatus(String availabilityStatus) {
-                this.availabilityStatus = availabilityStatus;
+            public Builder setStatus(AccomodationStatus status) {
+                this.status = status;
                 return this;
             }
 
@@ -99,10 +93,9 @@ public class Accomodation {
             }
             public Accomodation.Builder copy(Accomodation accomodation) {
                 this.accomodationID = accomodation.getAccomodationID();
-                this.accomodationName = accomodation.getAccomodationName();
                 this.rent = accomodation.getRent();
                 this.roomType = accomodation.getRoomType();
-                this.availabilityStatus = accomodation.getAvailabilityStatus();
+                this.accomodationStatus = accomodation.getAccomodationStatus();
                 this.location = accomodation.getLocation();
                 return this;
             }
