@@ -1,7 +1,8 @@
 package co.za.cput.factory.generic;
-// Contact.java
-// Domain class for Contact
-// Author: T.Malifethe 222602511
+
+//Firstname:        Tandile
+//LastName:         Malifethe
+//Student Number:   222602511
 
 import co.za.cput.domain.generic.Contact;
 import co.za.cput.util.Helper;

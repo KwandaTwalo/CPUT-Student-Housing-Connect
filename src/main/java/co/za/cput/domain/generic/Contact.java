@@ -1,8 +1,9 @@
 package co.za.cput.domain.generic;
 
-// Contact.java
-// Domain class for Contact
-// Author: T.Malifethe 222602511
+//Firstname:        Tandile
+//LastName:         Malifethe
+//Student Number:   222602511
+
 public class Contact {
     private String contactid;
     private String email;
