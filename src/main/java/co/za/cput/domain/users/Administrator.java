@@ -1,107 +1,107 @@
 package co.za.cput.domain.users;
 
+import co.za.cput.domain.business.Verification;
+import co.za.cput.domain.generic.Contact;
+import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
 public class Administrator {
-    private Integer adminId;
-    private String name;
-    private String surname;
-    private String email;
-    private String phoneNumber;
-    private String password;
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long adminID;
+    private String adminName;
+    private String adminSurname;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "contact_ID", referencedColumnName = "contactID")
+    private Contact contact;
+
+    @OneToMany(mappedBy = "administrator", cascade = CascadeType.ALL, orphanRemoval = false)
+    private List<Verification> verifications = new ArrayList<Verification>();
 
     protected Administrator(){}
+
     private Administrator(Builder builder){
-        this.adminId = builder.adminId;
-        this.name = builder.name;
-        this.surname = builder.surname;
-        this.email = builder.email;
-        this.phoneNumber = builder.phoneNumber;
-        this.password = builder.password;
+        this.adminID = builder.adminID;
+        this.adminName = builder.adminName;
+        this.adminSurname = builder.adminSurname;
+        this.contact = builder.contact;
+        this.verifications = builder.verifications;
     }
 
-    public Integer getAdminId() {
-        return adminId;
+    public Long getAdminID() {
+        return adminID;
     }
 
-    public String getName() {
-        return name;
+    public String getAdminName() {
+        return adminName;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getAdminSurname() {
+        return adminSurname;
     }
 
-    public String getEmail() {
-        return email;
+    public Contact getContact() {
+        return contact;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-    public String getPassword() {
-        return password;
+    public List<Verification> getVerifications() {
+        return verifications;
     }
 
     @Override
     public String toString() {
         return "Administrator{" +
-                "adminId=" + adminId +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", email='" + email + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", password='" + password + '\'' +
+                "adminId=" + adminID +
+                ", adminName='" + adminName + '\'' +
+                ", adminSurname='" + adminSurname + '\'' +
+                ", contact=" + contact +
+                ", verifications=" + verifications +
                 '}';
     }
 
     public static class Builder {
-        private Integer adminId;
-        private String name;
-        private String surname;
-        private String email;
-        private String phoneNumber;
-        private String password;
+        private Long adminID;
+        private String adminName;
+        private String adminSurname;
+        private Contact contact;
+        private List<Verification> verifications;
 
-        public Builder setAdminId(Integer adminId) {
-            this.adminId = adminId;
+        public Builder setAdminID(Long adminID) {
+            this.adminID = adminID;
             return this;
         }
 
-        public Builder setName(String name) {
-            this.name = name;
+        public Builder setAdminName(String adminName) {
+            this.adminName = adminName;
             return this;
         }
 
-        public Builder setSurname(String surname) {
-            this.surname = surname;
+        public Builder setAdminSurname(String adminSurname) {
+            this.adminSurname = adminSurname;
             return this;
         }
-
-        public Builder setEmail(String email) {
-            this.email = email;
+        public Builder setContact(Contact contact) {
+            this.contact = contact;
             return this;
         }
-
-        public Builder setPhoneNumber(String phoneNumber) {
-            this.phoneNumber = phoneNumber;
-            return this;
-        }
-
-        public Builder setPassword(String password) {
-            this.password = password;
+        public Builder setVerifications(List<Verification> verifications) {
+            this.verifications = verifications;
             return this;
         }
 
         public Builder copy(Administrator admin){
-            return new Builder()
-                    .setAdminId(admin.getAdminId())
-                    .setName(admin.getName())
-                    .setSurname(admin.getSurname())
-                    .setEmail(admin.getEmail())
-                    .setPhoneNumber(admin.getPhoneNumber())
-                    .setPassword(admin.getPassword());
+            this.adminID = admin.getAdminID();
+            this.adminName = admin.getAdminName();
+            this.adminSurname = admin.getAdminSurname();
+            this.contact = admin.getContact();
+            this.verifications = admin.getVerifications();
+            return this;
         }
-
         public Administrator build(){
             return new Administrator(this);
         }

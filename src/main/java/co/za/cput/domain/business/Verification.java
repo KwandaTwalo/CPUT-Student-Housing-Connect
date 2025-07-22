@@ -3,13 +3,21 @@ package co.za.cput.domain.business;
 //Lastname:Jiyane
 //Student Number: 222359676
 
+import co.za.cput.domain.users.Administrator;
+import jakarta.persistence.*;
+
 import java.util.Date;
 
+@Entity
 public class Verification {
 
-    private String verificationID;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long verificationID;
     private Date verificationDate;
-    private VerificationStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private VerificationStatus verificationStatus;
 
     public enum VerificationStatus {
         PENDING,
@@ -17,15 +25,25 @@ public class Verification {
         REJECTED;
     }
 
-    public Verification() {}
+    @ManyToOne
+    @JoinColumn(name = "admin_ID", referencedColumnName = "adminID", nullable = false)
+    private Administrator administrator;
+
+    @OneToOne
+    @JoinColumn(name = "accommodation_ID", referencedColumnName = "accommodationID", nullable = false)
+    private Accommodation accommodation;
+
+    protected Verification() {}
 
     private Verification(Builder builder) {
         this.verificationID = builder.verificationID;
         this.verificationDate = builder.verificationDate;
-        this.status = builder.status;
+        this.verificationStatus = builder.verificationStatus;
+        this.administrator = builder.administrator;
+        this.accommodation = builder.accommodation;
     }
 
-    public String getVerificationID() {
+    public Long getVerificationID() {
         return verificationID;
     }
 
@@ -33,25 +51,37 @@ public class Verification {
         return verificationDate;
     }
 
-    public VerificationStatus getStatus() {
-        return status;
+    public VerificationStatus getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public Administrator getAdministrator() {
+        return administrator;
+    }
+
+    public Accommodation getAccommodation() {
+        return accommodation;
     }
 
     @Override
     public String toString() {
         return "Verification{" +
-                "verificationID='" + getVerificationID() + '\'' +
-                ", verificationDate=" + getVerificationDate() +
-                ", status=" + getStatus() +
+                "verificationID=" + verificationID +
+                ", verificationDate=" + verificationDate +
+                ", verificationStatus=" + verificationStatus +
+                ", administrator=" + administrator +
+                ", accommodation=" + accommodation +
                 '}';
     }
 
     public static class Builder {
-        private String verificationID;
+        private Long verificationID;
         private Date verificationDate;
-        private VerificationStatus status;
+        private VerificationStatus verificationStatus;
+        private Administrator administrator;
+        private Accommodation accommodation;
 
-        public Builder setVerificationID(String verificationID) {
+        public Builder setVerificationID(Long verificationID) {
             this.verificationID = verificationID;
             return this;
         }
@@ -61,15 +91,26 @@ public class Verification {
             return this;
         }
 
-        public Builder setStatus(VerificationStatus status) {
-            this.status = status;
+        public Builder setVerificationStatus(VerificationStatus verificationStatus) {
+            this.verificationStatus = verificationStatus;
+            return this;
+        }
+
+        public Builder setAdministrator(Administrator administrator) {
+            this.administrator = administrator;
+            return this;
+        }
+        public Builder setAccommodation(Accommodation accommodation) {
+            this.accommodation = accommodation;
             return this;
         }
 
         public Builder copy(Verification verification) {
             this.verificationID = verification.getVerificationID();
             this.verificationDate = verification.getVerificationDate();
-            this.status = verification.getStatus();
+            this.verificationStatus = verification.getVerificationStatus();
+            this.administrator = verification.getAdministrator();
+            this.accommodation = verification.getAccommodation();
             return this;
         }
 

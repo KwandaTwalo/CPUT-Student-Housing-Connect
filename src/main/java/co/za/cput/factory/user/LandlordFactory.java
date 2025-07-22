@@ -10,27 +10,20 @@ import co.za.cput.util.Helper;
 
 public class LandlordFactory {
     public Landlord createLandlord(String landlordFirstName,
-                                   String landlordLastName,
-
-                                   String landlordEmail,
-                                   String landlordPhone,
+                                   String landlordLastName
                                    ) {
 
         String landlordID = UUID.randomUUID().toString();
 
         if (!Helper.validateStringDetails(landlordFirstName) ||
-                !Helper.validateStringDetails(landlordLastName) ||
-                !Helper.validateStringDetails(landlordEmail) ||
-                !Helper.validateStringDetails(landlordPhone)) {
+                !Helper.validateStringDetails(landlordLastName))
+                 {
             return null;
         }
 
         return new Landlord.Builder()
-                .setLandlordID(landlordID)
                 .setLandlordFirstName(landlordFirstName)
                 .setLandlordLastName(landlordLastName)
-                .setLandlordEmail(landlordEmail)
-                .setLandlordPhone(landlordPhone)
                 .build();
     }
 }

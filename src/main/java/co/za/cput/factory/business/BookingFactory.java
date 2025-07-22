@@ -7,14 +7,12 @@ import java.util.UUID;
 
 public class BookingFactory {
     public static Booking createBooking(Date requestDate, Booking.BookingStatus bookingStatus) {
-        String bookingId = UUID.randomUUID().toString();
 
         if (!Helper.validateRequestDate(requestDate)) {
             return null;
         }
 
         return new Booking.Builder()
-                .setBookingID(bookingId)
                 .setRequestDate(requestDate)
                 .setStatus(bookingStatus)
                 .build();

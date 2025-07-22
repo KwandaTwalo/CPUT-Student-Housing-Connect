@@ -5,7 +5,7 @@ import co.za.cput.util.Helper;
 
 public class AdministratorFactory {
 
-    public static Administrator createAdministrator(Integer id, String name, String surname, String email, String phoneNumber, String password) {
+    public static Administrator createAdministrator(String name, String surname, String email, String phoneNumber, String password) {
 
         if(Helper.validateStringDetails(name)|| Helper.validateStringDetails(surname)|| Helper.validateStringDetails(email)){
             return null;
@@ -24,11 +24,8 @@ public class AdministratorFactory {
         }
 
         return new Administrator.Builder()
-                .setName(name)
-                .setSurname(surname)
-                .setEmail(email)
-                .setPhoneNumber(phoneNumber)
-                .setPassword(password)
+                .setAdminName(name)
+                .setAdminSurname(surname)
                 .build();
     }
 }

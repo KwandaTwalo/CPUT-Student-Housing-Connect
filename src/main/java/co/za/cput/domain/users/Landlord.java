@@ -4,61 +4,78 @@ package co.za.cput.domain.users;
 //LastName:         Mthethwa
 //Student Number:   221802797.
 
-import co.za.cput.domain.business.Accomodation;
+import co.za.cput.domain.business.Accommodation;
+import co.za.cput.domain.generic.Contact;
+import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
 public class Landlord {
 
-    private String landlordID;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long landlordID;
     private String landlordFirstName;
     private String landlordLastName;
-    private String landlordEmail;
-    private String landlordPhone;
 
-    private Landlord() {}
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "contact_ID", referencedColumnName = "contactID")
+    private Contact contact;
 
-    private Landlord (Landlord.Builder builder){
+    @OneToMany(mappedBy = "landlord",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Accommodation> accommodationList = new ArrayList<Accommodation>();
 
+    protected Landlord() {
+    }
+
+    private Landlord(Landlord.Builder builder) {
         this.landlordID = builder.landlordID;
         this.landlordFirstName = builder.landlordFirstName;
         this.landlordLastName = builder.landlordLastName;
-        this.landlordEmail = builder.landlordEmail;
-        this.landlordPhone = builder.landlordPhone;
+        this.contact = builder.contact;
     }
-    public String getLandlordID() {
+
+    public Long getLandlordID() {
         return landlordID;
     }
+
     public String getLandlordFirstName() {
         return landlordFirstName;
     }
+
     public String getLandlordLastName() {
         return landlordLastName;
     }
-    public String getLandlordEmail() {
-        return landlordEmail;
+
+    public Contact getContact() {
+        return contact;
     }
-    public String getLandlordPhone() {
-        return landlordPhone;
+
+    public List<Accommodation> getAccommodationList() {
+        return accommodationList;
     }
 
     @Override
     public String toString() {
         return "Landlord{" +
-                "landlordID='" + landlordID + '\'' +
+                "landlordID=" + landlordID +
                 ", landlordFirstName='" + landlordFirstName + '\'' +
                 ", landlordLastName='" + landlordLastName + '\'' +
-                ", landlordEmail='" + landlordEmail + '\'' +
-                ", landlordPhone='" + landlordPhone + '\'' +
+                ", contact=" + contact +
+                ", accommodationList=" + accommodationList +
                 '}';
     }
 
     public static class Builder {
-        private String landlordID;
+        private Long landlordID;
         private String landlordFirstName;
         private String landlordLastName;
-        private String landlordEmail;
-        private String landlordPhone;
+        private Contact contact;
+        private List<Accommodation> accommodationList;
 
-        public Builder setLandlordID(String landlordID) {
+        public Builder setLandlordID(Long landlordID) {
             this.landlordID = landlordID;
             return this;
         }
@@ -72,25 +89,27 @@ public class Landlord {
             this.landlordLastName = landlordLastName;
             return this;
         }
-
-        public Builder setLandlordEmail(String landlordEmail) {
-            this.landlordEmail = landlordEmail;
+        public Builder setContact(Contact contact) {
+            this.contact = contact;
+            return this;
+        }
+        public Builder setAccommodationList(List<Accommodation> accommodationList) {
+            this.accommodationList = accommodationList;
             return this;
         }
 
-        public Builder setLandlordPhone(String landlordPhone) {
-            this.landlordPhone = landlordPhone;
-            return this;
-        }
         public Landlord.Builder copy(Landlord landlord) {
             this.landlordID = landlord.getLandlordID();
             this.landlordFirstName = landlord.getLandlordFirstName();
             this.landlordLastName = landlord.getLandlordLastName();
-            this.landlordEmail = landlord.getLandlordEmail();
-            this.landlordPhone = landlord.getLandlordPhone();
+            this.contact = landlord.getContact();
+            this.accommodationList = landlord.getAccommodationList();
             return this;
         }
-        public Landlord build() {return new Landlord(this);}
+
+        public Landlord build() {
+            return new Landlord(this);
+        }
     }
 
 }

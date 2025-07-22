@@ -11,16 +11,14 @@ import java.util.UUID;
 public class VerificationFactory {
 
     public static Verification createVerification( Date verificationDate, Verification.VerificationStatus status) {
-        String verificationID = UUID.randomUUID().toString();
 
         if (!Helper.validateRequestDate(verificationDate))  {
             return null;
         }
 
         return new Verification.Builder()
-                .setVerificationID(verificationID)
                 .setVerificationDate(verificationDate)
-                .setStatus(status)
+                .setVerificationStatus(status)
                 .build();
     }
 }

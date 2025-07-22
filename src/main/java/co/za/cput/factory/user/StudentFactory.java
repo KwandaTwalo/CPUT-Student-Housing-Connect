@@ -7,7 +7,6 @@ import co.za.cput.domain.users.Student;
 import co.za.cput.util.Helper;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 public class StudentFactory {
     public Student createStudent(String studentName,
@@ -15,8 +14,6 @@ public class StudentFactory {
                                  LocalDate studentDateOfBirth,
                                  String gender,
                                  Student.FundingStatus fundingStatus) {
-
-        String studentID = UUID.randomUUID().toString();
 
         if (!Helper.validateStringDetails(studentName) ||
                 !Helper.validateStringDetails(studentSurname) ||
@@ -26,7 +23,6 @@ public class StudentFactory {
         }
 
         return new Student.Builder()
-                .setStudentID(studentID)
                 .setStudentName(studentName)
                 .setStudentSurname(studentSurname)
                 .setDateOfBirth(studentDateOfBirth)

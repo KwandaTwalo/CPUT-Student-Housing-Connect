@@ -1,22 +1,32 @@
 package co.za.cput.domain.generic;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
 //Firstname:        Tandile
 //LastName:         Malifethe
 //Student Number:   222602511
-
+@Entity
 public class Contact {
-    private String contactid;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long contactID;
     private String email;
     private String phoneNumber;
 
+    protected Contact() {
+    }
+
     private Contact(Builder builder) {
-        this.contactid = builder.contactid;
+        this.contactID = builder.contactID;
         this.email = builder.email;
         this.phoneNumber = builder.phoneNumber;
     }
 
-    public String getContactid() {
-        return contactid;
+    public Long getContactID() {
+        return contactID;
     }
 
     public String getEmail() {
@@ -30,19 +40,19 @@ public class Contact {
     @Override
     public String toString() {
         return "Contact{" +
-                "contactid='" + contactid + '\'' +
+                "contactID='" + contactID + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 '}';
     }
 
     public static class Builder {
-        private String contactid;
+        private Long contactID;
         private String email;
         private String phoneNumber;
 
-        public Builder setContactid(String contactid) {
-            this.contactid = contactid;
+        public Builder setContactID(Long contactID) {
+            this.contactID = contactID;
             return this;
         }
 
@@ -57,7 +67,7 @@ public class Contact {
         }
 
         public Builder copy(Contact contact) {
-            this.contactid = contact.contactid;
+            this.contactID = contact.contactID;
             this.email = contact.email;
             this.phoneNumber = contact.phoneNumber;
             return this;
