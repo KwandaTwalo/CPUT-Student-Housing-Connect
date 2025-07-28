@@ -1,4 +1,7 @@
 package co.za.cput.repository.users;
 
-public interface AdministratorRepository {
+import co.za.cput.domain.users.Administrator;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AdministratorRepository extends JpaRepository<Administrator, Long> {
 }
