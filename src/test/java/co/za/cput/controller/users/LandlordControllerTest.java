@@ -27,7 +27,7 @@ class LandlordControllerTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-    private static final String BASE_URL = "";
+    private static final String BASE_URL = "http://localhost:8080/CPUTstudenthousingconnect/customer";
 
 
     @BeforeAll
@@ -35,7 +35,7 @@ class LandlordControllerTest {
 
         landlord = LandlordFactory.createLandlord(
                 "Sinhle",
-                "Mthethwa",
+                "Mthethwa"
                 );
 }
 @Test

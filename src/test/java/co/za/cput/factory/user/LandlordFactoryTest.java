@@ -23,7 +23,7 @@ class LandlordFactoryTest {
 
 
     private static LandlordFactory factory2 = LandlordFactory.createLandlord(
-            "Xiluva",
+            "Sinhle",
             "Mthethwa");
 
     @Test
