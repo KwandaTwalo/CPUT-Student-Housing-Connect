@@ -1,4 +1,10 @@
 package co.za.cput.service.users;
 
-public interface IAdministratorService {
+import co.za.cput.domain.users.Administrator;
+import co.za.cput.service.IService;
+
+import java.util.List;
+
+public interface IAdministratorService extends IService<Administrator, Long> {
+    List<Administrator> getAllAdministrators();
 }

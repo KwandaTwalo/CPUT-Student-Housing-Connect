@@ -1,5 +1,6 @@
 package co.za.cput.domain.business;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ public class Review {
 
     @OneToOne
     @JoinColumn(name = "booking_ID", referencedColumnName = "bookingID", nullable = true)
+    @JsonBackReference
     private Booking booking;
 
     protected Review() {}
@@ -98,3 +100,11 @@ public class Review {
         public Review build() {return new Review(this);}
     }
 }
+
+//object for Postman testing
+/*
+{
+        "rating": 4,
+        "comment": "Great experience! The place was clean and the landlord was responsive.",
+        "reviewDate": "2025-08-03"
+        }*/

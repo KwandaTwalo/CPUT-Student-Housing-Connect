@@ -4,9 +4,11 @@ package co.za.cput.domain.business;
 //Student Number: 222359676
 
 import co.za.cput.domain.users.Administrator;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Verification {
@@ -14,7 +16,10 @@ public class Verification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long verificationID;
-    private Date verificationDate;
+    private LocalDate verificationDate; //The date the actual verification took place
+    private String notes;// Reason for rejection or extra context about the verification.
+    private LocalDateTime createAt; //When the verification request was created.
+    private LocalDateTime updateAt;//When the verification status was last updated.
 
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus;
@@ -25,12 +30,13 @@ public class Verification {
         REJECTED;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "admin_ID", referencedColumnName = "adminID", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_ID", referencedColumnName = "adminID", nullable = true)
+    @JsonBackReference
     private Administrator administrator;
 
     @OneToOne
-    @JoinColumn(name = "accommodation_ID", referencedColumnName = "accommodationID", nullable = false)
+    @JoinColumn(name = "accommodation_ID", referencedColumnName = "accommodationID", nullable = true)
     private Accommodation accommodation;
 
     protected Verification() {}
@@ -38,6 +44,9 @@ public class Verification {
     private Verification(Builder builder) {
         this.verificationID = builder.verificationID;
         this.verificationDate = builder.verificationDate;
+        this.notes = builder.notes;
+        this.createAt = builder.createAt;
+        this.updateAt = builder.updateAt;
         this.verificationStatus = builder.verificationStatus;
         this.administrator = builder.administrator;
         this.accommodation = builder.accommodation;
@@ -47,8 +56,20 @@ public class Verification {
         return verificationID;
     }
 
-    public Date getVerificationDate() {
+    public LocalDate getVerificationDate() {
         return verificationDate;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public LocalDateTime getCreateAt() {
+        return createAt;
+    }
+
+    public LocalDateTime getUpdateAt() {
+        return updateAt;
     }
 
     public VerificationStatus getVerificationStatus() {
@@ -68,6 +89,9 @@ public class Verification {
         return "Verification{" +
                 "verificationID=" + verificationID +
                 ", verificationDate=" + verificationDate +
+                ", notes='" + notes + '\'' +
+                ", createAt=" + createAt +
+                ", updateAt=" + updateAt +
                 ", verificationStatus=" + verificationStatus +
                 ", administrator=" + administrator +
                 ", accommodation=" + accommodation +
@@ -76,7 +100,10 @@ public class Verification {
 
     public static class Builder {
         private Long verificationID;
-        private Date verificationDate;
+        private LocalDate verificationDate;
+        private String notes;
+        private LocalDateTime createAt;
+        private LocalDateTime updateAt;
         private VerificationStatus verificationStatus;
         private Administrator administrator;
         private Accommodation accommodation;
@@ -86,8 +113,20 @@ public class Verification {
             return this;
         }
 
-        public Builder setVerificationDate(Date verificationDate) {
+        public Builder setVerificationDate(LocalDate verificationDate) {
             this.verificationDate = verificationDate;
+            return this;
+        }
+        public Builder setNotes(String notes) {
+            this.notes = notes;
+            return this;
+        }
+        public Builder setCreateAt(LocalDateTime createAt) {
+            this.createAt = createAt;
+            return this;
+        }
+        public Builder setUpdateAt(LocalDateTime updateAt) {
+            this.updateAt = updateAt;
             return this;
         }
 
@@ -108,6 +147,9 @@ public class Verification {
         public Builder copy(Verification verification) {
             this.verificationID = verification.getVerificationID();
             this.verificationDate = verification.getVerificationDate();
+            this.notes = verification.getNotes();
+            this.createAt = verification.getCreateAt();
+            this.updateAt = verification.getUpdateAt();
             this.verificationStatus = verification.getVerificationStatus();
             this.administrator = verification.getAdministrator();
             this.accommodation = verification.getAccommodation();

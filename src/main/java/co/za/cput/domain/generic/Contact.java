@@ -1,9 +1,7 @@
 package co.za.cput.domain.generic;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 
 //Firstname:        Tandile
 //LastName:         Malifethe
@@ -15,6 +13,24 @@ public class Contact {
     private Long contactID;
     private String email;
     private String phoneNumber;
+    private String alternatePhoneNumber;
+
+    @JsonProperty("isEmailVerified")
+    @Column(name = "is_email_verified")
+    private boolean isEmailVerified;
+
+    @JsonProperty("isPhoneVerified")
+    @Column(name = "is_phone_verified")
+    private boolean isPhoneVerified;
+
+    @Enumerated(EnumType.STRING)
+    private PreferredContactMethod preferredContactMethod;
+
+    public enum PreferredContactMethod {
+        EMAIL,
+        PHONE,
+        ALTERNATE_PHONE
+    }
 
     protected Contact() {
     }
@@ -23,6 +39,10 @@ public class Contact {
         this.contactID = builder.contactID;
         this.email = builder.email;
         this.phoneNumber = builder.phoneNumber;
+        this.alternatePhoneNumber = builder.alternatePhoneNumber;
+        this.isEmailVerified = builder.isEmailVerified;
+        this.isPhoneVerified = builder.isPhoneVerified;
+        this.preferredContactMethod = builder.preferredContactMethod;
     }
 
     public Long getContactID() {
@@ -37,12 +57,32 @@ public class Contact {
         return phoneNumber;
     }
 
+    public String getAlternatePhoneNumber() {
+        return alternatePhoneNumber;
+    }
+
+    public boolean isEmailVerified() {
+        return isEmailVerified;
+    }
+
+    public boolean isPhoneVerified() {
+        return isPhoneVerified;
+    }
+
+    public PreferredContactMethod getPreferredContactMethod() {
+        return preferredContactMethod;
+    }
+
     @Override
     public String toString() {
         return "Contact{" +
-                "contactID='" + contactID + '\'' +
+                "contactID=" + contactID +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
+                ", alternatePhoneNumber='" + alternatePhoneNumber + '\'' +
+                ", isEmailVerified=" + isEmailVerified +
+                ", isPhoneVerified=" + isPhoneVerified +
+                ", preferredContactMethod=" + preferredContactMethod +
                 '}';
     }
 
@@ -50,6 +90,10 @@ public class Contact {
         private Long contactID;
         private String email;
         private String phoneNumber;
+        private String alternatePhoneNumber;
+        private boolean isEmailVerified;
+        private boolean isPhoneVerified;
+        private PreferredContactMethod preferredContactMethod;
 
         public Builder setContactID(Long contactID) {
             this.contactID = contactID;
@@ -66,10 +110,34 @@ public class Contact {
             return this;
         }
 
+        public Builder setAlternatePhoneNumber(String alternatePhoneNumber) {
+            this.alternatePhoneNumber = alternatePhoneNumber;
+            return this;
+        }
+
+        public Builder setIsEmailVerified(boolean isEmailVerified) {
+            this.isEmailVerified = isEmailVerified;
+            return this;
+        }
+
+        public Builder setIsPhoneVerified(boolean isPhoneVerified) {
+            this.isPhoneVerified = isPhoneVerified;
+            return this;
+        }
+
+        public Builder setPreferredContactMethod(PreferredContactMethod preferredContactMethod) {
+            this.preferredContactMethod = preferredContactMethod;
+            return this;
+        }
+
         public Builder copy(Contact contact) {
-            this.contactID = contact.contactID;
-            this.email = contact.email;
-            this.phoneNumber = contact.phoneNumber;
+            this.contactID = contact.getContactID();
+            this.email = contact.getEmail();
+            this.phoneNumber = contact.getPhoneNumber();
+            this.alternatePhoneNumber = contact.getAlternatePhoneNumber();
+            this.isEmailVerified = contact.isEmailVerified();
+            this.isPhoneVerified = contact.isPhoneVerified();
+            this.preferredContactMethod = contact.getPreferredContactMethod();
             return this;
         }
 
