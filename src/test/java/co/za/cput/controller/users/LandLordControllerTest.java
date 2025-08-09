@@ -1,4 +1,7 @@
 package co.za.cput.controller.users;
+//Firstname:        Sinhle Xiluva
+//LastName:         Mthethwa
+//Student Number:   221802797.
 
 import co.za.cput.domain.generic.Contact;
 import co.za.cput.domain.users.Landlord;
@@ -80,3 +83,5 @@ class LandLordControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }
+
+
