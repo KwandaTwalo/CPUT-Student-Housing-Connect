@@ -1,42 +1,82 @@
 package co.za.cput.factory.user;
-
-import co.za.cput.domain.users.Landlord;
-
 //Firstname:        Sinhle Xiluva
 //LastName:         Mthethwa
 //Student Number:   221802797.
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
+import co.za.cput.domain.generic.Contact;
+import co.za.cput.domain.users.Landlord;
+import co.za.cput.factory.generic.ContactFactory;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+
+import java.time.LocalDate;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-
 class LandlordFactoryTest {
 
-    private static LandlordFactory factory1 = LandlordFactory.createLandlord(
-            "Sinhle",
-            "Mthethwa");
+    private static final Contact contact = ContactFactory.createContact(
+            "landlord@example.com",
+            "0721234567",
+            "0731234567",
+            true,
+            false,
+            Contact.PreferredContactMethod.PHONE
+    );
 
-
-    private static LandlordFactory factory2 = LandlordFactory.createLandlord(
-            "Sinhle",
-            "Mthethwa");
+    // Landlord object with only attributes
+    private static Landlord landlord = LandlordFactory.createLandlord(
+            "Kwanda",
+            "Twalo",
+            true,
+            LocalDate.of(2024, 12, 1),
+            "ValidPass123",
+            contact,
+            null
+    );
 
     @Test
-    @Order(1)
-    public void testCreateLandlord1 () {
-        assertNotNull(factory1);
-        System.out.println(factory1.toString());
-    }
-    @Test
-    @Order(2)
-    public void testCreateLandlord1 () {
-        assertNotNull(factory2);
-        System.out.println(factory2.toString());
+    void createLandlord() {
+        assertNotNull(landlord);
+        System.out.println("Created Landlord: " + landlord);
     }
 
+    @Test
+    void testInvalidDateRegistered() {
+        // date in the future (invalid)
+        LocalDate futureDate = LocalDate.now().plusDays(5);
+
+        Landlord landlord = LandlordFactory.createLandlord(
+                "John",
+                "Doe",
+                true,
+                futureDate,
+                "ValidPass123",
+                contact,
+                Collections.emptyList()
+        );
+
+        assertNull(landlord);
+        System.out.println("Landlord should be null due to invalid dateRegistered: " + landlord);
+    }
+
+    @Test
+    void testInvalidPassword() {
+        // password without digits or too short (invalid)
+        String invalidPassword = "short";
+
+        Landlord landlord = LandlordFactory.createLandlord(
+                "Jane",
+                "Smith",
+                true,
+                LocalDate.of(2023, 10, 1),
+                invalidPassword,
+                contact,
+                null
+        );
+
+        assertNull(landlord);
+        System.out.println("Landlord should be null due to invalid password: " + landlord);
+    }
 }
+

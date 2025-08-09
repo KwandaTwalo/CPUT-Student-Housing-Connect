@@ -72,27 +72,27 @@ public class Address {
         private String city;
         private int postalCode;
 
-        public Builder addressID(Long addressID) {
+        public Builder setAddressID(Long addressID) {
             this.addressID = addressID;
             return this;
         }
-        public Builder streetNumber(String streetNumber) {
+        public Builder setStreetNumber(String streetNumber) {
             this.streetNumber = streetNumber;
             return this;
         }
-        public Builder streetName(String streetName) {
+        public Builder setStreetName(String streetName) {
             this.streetName = streetName;
             return this;
         }
-        public Builder suburb(String suburb) {
+        public Builder setSuburb(String suburb) {
             this.suburb = suburb;
             return this;
         }
-        public Builder city(String city) {
+        public Builder setCity(String city) {
             this.city = city;
             return this;
         }
-        public Builder postalCode(int postalCode) {
+        public Builder setPostalCode(int postalCode) {
             this.postalCode = postalCode;
             return this;
         }

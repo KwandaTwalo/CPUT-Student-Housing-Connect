@@ -5,44 +5,61 @@ package co.za.cput.controller.business;
 
 import co.za.cput.domain.business.Verification;
 import co.za.cput.service.business.implementation.VerificationServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/verification")
+@RequestMapping("/Verification")
 public class VerificationController {
 
-    private final VerificationServiceImpl verificationService;
-
+    private VerificationServiceImpl verificationService;
+  
     @Autowired
     public VerificationController(VerificationServiceImpl verificationService) {
         this.verificationService = verificationService;
     }
 
-    @PostMapping
-    public Verification create(@RequestBody Verification verification) {
-        return verificationService.create(verification);
+    @PostMapping("/create")
+    public ResponseEntity<Verification> create(@RequestBody Verification verification) {
+        Verification createdVerification = verificationService.create(verification);
+        return ResponseEntity.ok(createdVerification);
     }
 
-    @GetMapping("/{id}")
-    public Verification read(@PathVariable String id) {
-        return verificationService.read(id);
+    @GetMapping("/read/{verificationID}")
+    public ResponseEntity<Verification> read(@PathVariable Long verificationID) {
+        Verification readVerification = verificationService.read(verificationID);
+        if (readVerification == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(readVerification);
     }
 
-    @PutMapping
-    public Verification update(@RequestBody Verification verification) {
-        return verificationService.update(verification);
+    @PutMapping("/update")
+    public ResponseEntity<Verification> update(@RequestBody Verification verification) {
+        if(verification.getVerificationID() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        Verification updatedVerification = verificationService.update(verification);
+        if (updatedVerification == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updatedVerification);
     }
 
-    @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable String id) {
-        return verificationService.delete(id);
+    @GetMapping("/getAllVerification")
+    public ResponseEntity<List<Verification>> getAllVerification() {
+        List<Verification> verifications = verificationService.getAllVerifications();
+        if (verifications == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(verifications);
     }
 
-    @GetMapping
-    public List<Verification> findAll() {
-        return verificationService.findAll();
+    @DeleteMapping("/delete/{verificationID}")
+    public void delete(@PathVariable Long verificationID) {
+        verificationService.delete(verificationID);
     }
 }
+

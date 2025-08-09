@@ -1,9 +1,7 @@
 package co.za.cput.service.business.implementation;
-
 //Firstname: Siyabonga
 //Lastname: Jiyane
 //Student Number: 222359676
-
 
 import co.za.cput.domain.business.Verification;
 import co.za.cput.repository.business.VerificationRepository;
@@ -16,42 +14,35 @@ import java.util.List;
 @Service
 public class VerificationServiceImpl implements IVerificationService {
 
-    private final VerificationRepository repository;
+    private VerificationRepository verificationRepository;
 
     @Autowired
-    public VerificationServiceImpl(VerificationRepository repository) {
-        this.repository = repository;
+    public VerificationServiceImpl(VerificationRepository verificationRepository) {
+        this.verificationRepository = verificationRepository;
     }
 
     @Override
     public Verification create(Verification verification) {
-        return repository.save(verification);
+        return verificationRepository.save(verification);
     }
 
     @Override
-    public Verification read(String id) {
-        return repository.findById(id).orElse(null);
+    public Verification read(Long Id) {
+        return verificationRepository.findById(Id).orElse(null);
     }
 
     @Override
     public Verification update(Verification verification) {
-        if (repository.existsById(verification.getVerificationId())) {
-            return repository.save(verification);
-        }
-        return null;
+        return verificationRepository.save(verification);
     }
 
     @Override
-    public boolean delete(String id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return true;
-        }
-        return false;
+    public List<Verification> getAllVerifications() {
+        return verificationRepository.findAll();
     }
 
     @Override
-    public List<Verification> findAll() {
-        return repository.findAll();
+    public void delete(Long aLong) {
+        verificationRepository.deleteById(aLong);
     }
 }

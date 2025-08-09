@@ -1,31 +1,33 @@
 package co.za.cput.factory.user;
 
+import co.za.cput.domain.business.Verification;
+import co.za.cput.domain.generic.Contact;
 import co.za.cput.domain.users.Administrator;
 import co.za.cput.util.Helper;
 
+import java.util.List;
+
 public class AdministratorFactory {
 
-    public static Administrator createAdministrator(String name, String surname, String email, String phoneNumber, String password) {
-
-        if(Helper.validateStringDetails(name)|| Helper.validateStringDetails(surname)|| Helper.validateStringDetails(email)){
-            return null;
-        }
-
-        if(!(Helper.isValidEmail(email))){
-            return null;
-        }
-
-        if(!(Helper.isValidPhoneNumber(phoneNumber))){
-            return null;
-        }
-
-        if(!(Helper.isValidPassword(password))){
+    public static Administrator createAdministrator(String adminFirstName,
+                                                    String adminLastName,
+                                                    String password,
+                                                    Administrator.AdminRoleStatus adminRoleStatus,
+                                                    Contact contact,
+                                                    List<Verification> verifications) {
+        if (Helper.isNullorEmpty(adminFirstName) ||
+                Helper.isNullorEmpty(adminLastName) ||
+                !Helper.isValidPassword(password)) {
             return null;
         }
 
         return new Administrator.Builder()
-                .setAdminName(name)
-                .setAdminSurname(surname)
+                .setAdminName(adminFirstName)
+                .setAdminSurname(adminLastName)
+                .setAdminPassword(password)
+                .setAdminRoleStatus(adminRoleStatus)
+                .setContact(contact)
+                .setVerifications(verifications)
                 .build();
     }
 }

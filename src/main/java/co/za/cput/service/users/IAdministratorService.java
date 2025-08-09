@@ -6,7 +6,5 @@ import co.za.cput.service.IService;
 import java.util.List;
 
 public interface IAdministratorService extends IService<Administrator, Long> {
-    List<Administrator> getAll();
-
-
+    List<Administrator> getAllAdministrators();
 }

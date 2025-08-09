@@ -8,7 +8,7 @@ import co.za.cput.service.IService;
 
 import java.util.List;
 
-public interface IVerificationService extends IService<Verification, String> {
-
-    List<Verification> findAll();
+public interface IVerificationService extends IService<Verification, Long> {
+    List<Verification> getAllVerifications();
 }
+

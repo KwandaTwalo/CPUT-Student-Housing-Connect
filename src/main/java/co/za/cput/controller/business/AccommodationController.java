@@ -1,47 +1,60 @@
 package co.za.cput.controller.business;
 
-//Firstname:        Sinhle Xiluva
-//LastName:         Mthethwa
-//Student Number:   221802797.
 
 import co.za.cput.domain.business.Accommodation;
 import co.za.cput.service.business.implementation.AccommodationServiceImpl;
-
-import co.za.cput.service.users.implementation.AdministratorServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
-@RequestMapping("/accommodationId")
-
+@RequestMapping("/Accommodation")
 public class AccommodationController {
 
-    private AccommodationServiceImpl service;
+    private final AccommodationServiceImpl accommodationService;
 
-    @Autowire
-    public AccommodationController(AccommodationServiceImpl service){
-        this.service = service;
+    public AccommodationController(AccommodationServiceImpl accommodationService) {
+        this.accommodationService = accommodationService;
     }
+
     @PostMapping("/create")
-    public Accommodation create(@RequestBody Accommodation accommodation){
-        return service.create(accommodation);
+    public ResponseEntity<Accommodation> create(@RequestBody Accommodation accommodation) {
+        Accommodation created = accommodationService.create(accommodation);
+        return ResponseEntity.ok(created);
     }
-    @GetMapping("/read/{landlordId}")
-    public Accommodation read(@PathVariable Long accommodationId){
-        return service.read(accommodationId);
+
+    @GetMapping("/read/{accommodationID}")
+    public ResponseEntity<Accommodation> read(@PathVariable Long accommodationID) {
+        Accommodation readAccommodation = accommodationService.read(accommodationID);
+        if (readAccommodation == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(readAccommodation);
     }
-    @GetMapping("/update")
-    public Accommodation update(@RequestBody Accommodation accommodation){
-        return service.update(accommodation);
+
+    @PutMapping("/update")
+    public ResponseEntity<Accommodation> update(@RequestBody Accommodation accommodation) {
+        if (accommodation.getAccommodationID() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        Accommodation updated = accommodationService.update(accommodation);
+        if (updated == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updated);
     }
-    @DeleteMapping("/delete/{accommodationId}")
-    public void delete(@PathVariable Long accommodationId){
-        service.delete(accommodationId);
+
+    @GetMapping("/getAllAccommodations")
+    public ResponseEntity<List<Accommodation>> getAllAccommodations() {
+        List<Accommodation> all = accommodationService.getAllAccommodations();
+        if (all == null || all.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(all);
     }
-    @GetMapping("/getAll")
-    public List<Accommodation> getAll() {
-        return service.getAll();
+
+    @DeleteMapping("/delete/{accommodationID}")
+    public void delete(@PathVariable Long accommodationID) {
+        accommodationService.delete(accommodationID);
     }
 }

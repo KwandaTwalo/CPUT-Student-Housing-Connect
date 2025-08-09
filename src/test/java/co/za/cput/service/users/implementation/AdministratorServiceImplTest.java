@@ -1,13 +1,15 @@
 package co.za.cput.service.users.implementation;
 
 import co.za.cput.domain.users.Administrator;
+import co.za.cput.domain.generic.Contact;
+import co.za.cput.factory.generic.ContactFactory;
 import co.za.cput.factory.user.AdministratorFactory;
-import co.za.cput.service.users.IAdministratorService;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,41 +18,68 @@ import static org.junit.jupiter.api.Assertions.*;
 class AdministratorServiceImplTest {
 
     @Autowired
-    private static IAdministratorService service;
-    private static Administrator administrator= AdministratorFactory.createAdministrator(
-            "Agnes",
-            "Mabusela",
-            "amabusela@gmail.com",
-            "0828289292",
-            "admin2025");
+    private AdministratorServiceImpl administratorService;
+
+    private static final Contact contact = ContactFactory.createContact(
+            "admin@gmail.com", "0821234567", "0832345678", true, true,
+            Contact.PreferredContactMethod.EMAIL
+    );
+
+    private static Administrator administrator = AdministratorFactory.createAdministrator(
+            "Kwanda", "Twalo", "StrongPass123", Administrator.AdminRoleStatus.ACTIVE, contact, null
+    );
+
+    private static Administrator adminWithId;
+
     @Test
     void a_create() {
-        Administrator created= service.create(administrator);
+        Administrator created = administratorService.create(administrator);
         assertNotNull(created);
-        System.out.println(created);
+        adminWithId = created;
+        System.out.println("Created: " + created);
     }
 
     @Test
+    //Transactional So I have added in each method because if I add them in the whole class then the create method
+    //pretends to save data to the database, but at the end of the test method it undoes(roll back) all the changes.
+    @Transactional
     void b_read() {
-        Administrator read = service.read(administrator.getAdminID());
-        assertNotNull(read);
-        System.out.println(read);
+        assertNotNull(adminWithId);
+        Administrator read = administratorService.read(adminWithId.getAdminID());
+        assertEquals(adminWithId.getAdminID(), read.getAdminID());
+        System.out.println("Read: " + read);
     }
 
     @Test
+    //Transactional So I have added in each method because if I add them in the whole class then the create method
+    //pretends to save data to the database, but at the end of the test method it undoes(roll back) all the changes.
+    @Transactional
     void c_update() {
-        Administrator newAdministrator = new Administrator.Builder().copy(administrator).setAdminName("Madikila").build();
-        Administrator updated = service.update(administrator);
-        assertNotNull(updated);
-        System.out.println(updated);
+        Administrator updated = new Administrator.Builder()
+                .copy(adminWithId)
+                .setAdminRoleStatus(Administrator.AdminRoleStatus.INACTIVE)
+                .build();
+        administratorService.update(updated);
+        Administrator readUpdated = administratorService.read(updated.getAdminID());
+        assertEquals(Administrator.AdminRoleStatus.INACTIVE, readUpdated.getAdminRoleStatus());
+        System.out.println("Updated: " + readUpdated);
+    }
+
+    @Test
+    //Transactional So I have added in each method because if I add them in the whole class then the create method
+    //pretends to save data to the database, but at the end of the test method it undoes(roll back) all the changes.
+    @Transactional
+    void d_getAllAdministrators() {
+        List<Administrator> all = administratorService.getAllAdministrators();
+        assertNotNull(all);
+        System.out.println("All admins: " + all);
     }
 
     @Test
     void e_delete() {
-    }
-
-    @Test
-    void d_getAll() {
-        System.out.println(service.getAll());
+        administratorService.delete(adminWithId.getAdminID());
+        assertNull(administratorService.read(adminWithId.getAdminID()));
+        System.out.println("Deleted: " + adminWithId);
     }
 }
+

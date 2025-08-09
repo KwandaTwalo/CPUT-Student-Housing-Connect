@@ -1,43 +1,51 @@
 package co.za.cput.factory.user;
 
+import co.za.cput.domain.generic.Contact;
 import co.za.cput.domain.users.Administrator;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
+import co.za.cput.factory.generic.ContactFactory;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AdministratorFactoryTest {
 
-    private static Administrator factory1 = AdministratorFactory.createAdministrator(
-            "Agnes",
-            "Mabusela",
-            "amabusela@gmail.com",
-            "0728382738",
-            "pass2025d");
+    private  Contact contact1 = ContactFactory.createContact(
+            "Abigail@yahoo.com",
+            "0712345678",
+            "0723456789",
+            true,
+            true,
+            Contact.PreferredContactMethod.EMAIL
+    );
 
-    private static Administrator factory2 = AdministratorFactory.createAdministrator(
-            "Agnes",
-            "Mabusela",
-            "amabuselagmail.com",
-            "0728382738",
-            "pass2025d");
+    private Administrator admin = AdministratorFactory.createAdministrator(
+            "Kwanda",
+            "Twalo",
+            "AdminPass123",                  // Password (must meet validation)
+            Administrator.AdminRoleStatus.ACTIVE,
+            contact1,
+            null
+    );
 
     @Test
-    @Order(1)
-    public void testCreateAdministrator1() {
-        assertNotNull(factory1);
-        System.out.println(factory1.toString());
+    void createAdministrator() {
+        assertNotNull(admin);
+        System.out.println("Created Administrator: " + admin);
     }
 
     @Test
-    @Order(2)
-    public void testCreateAdministrator2() {
-        assertNotNull(factory2);
-        System.out.println(factory2.toString());
+    void testInvalidPassword() {
+        Administrator invalidAdmin = AdministratorFactory.createAdministrator(
+                "Lindiwe",
+                "Ngcobo",
+                "1234", // invalid: too short, no letters
+                Administrator.AdminRoleStatus.ACTIVE,
+                contact1,
+                null
+        );
+        assertNull(invalidAdmin, "Factory should return null for invalid password");
+        System.out.println("Invalid password admin: " + invalidAdmin);
     }
-
-  
 }

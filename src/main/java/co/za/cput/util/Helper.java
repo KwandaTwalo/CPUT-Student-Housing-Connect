@@ -1,31 +1,22 @@
 package co.za.cput.util;
 
+import co.za.cput.domain.business.Booking;
+import co.za.cput.domain.users.Student;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Helper {
 
-    //NOTE CODE YOUR HELPER METHODS UNDER YOUR NAME.
 
-    //Kwanda
-    public static String generateID() {
-        //Generates Id's
-        return UUID.randomUUID().toString();
+    public static boolean isNullorEmpty(String str) {
+        return str == null || str.isEmpty();
     }
-
-    public static boolean validateStringDetails(String str) {
-        // Ensures that none of the fields are empty or null
-
-        if (str != null && !str.isEmpty()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 
     public static boolean validateStudentDateOfBirth(LocalDate dateOfBirth) {
         // Validates the student's date of birth
@@ -43,22 +34,61 @@ public class Helper {
         return dateOfBirth.isBefore(minimumDate);
     }
 
-    public static boolean validateRequestDate(Date requestDate) {
-        // Check if the requestDate is null
-        if (requestDate == null) {
-            return false; // Invalid if null
+    public static boolean isValidDistance(double distance) {
+        return distance > 0;
+    }
+
+    // Validates that a decimal number is not negative (e.g. rent, total amount).
+    public static boolean isValid_DecimalNumber(double decimalNumber) {
+        return decimalNumber >= 0;
+    }
+
+    public static boolean isValidRating(int rating) {
+        return rating >= 1 && rating <= 10;
+    }
+
+    public static boolean isValidPostalCode(int postalCode) {
+        return postalCode >= 1000 && postalCode <= 9999;
+    }
+
+    public static boolean isValid_ReviewDate(LocalDate reviewDate) {
+        if (reviewDate == null) {
+            return false;
         }
 
-        // Get the current date and time
-        Date now = new Date();
+        LocalDate today = LocalDate.now();
 
-        // Check if requestDate is before the current date/time
-        if (requestDate.before(now)) {
-            return false; // Invalid if the date is in the past
+        // A review date is valid if it's today or before
+        return !reviewDate.isAfter(today);
+    }
+
+    // Validates that the given date is not null and is not in the future.
+    public static boolean isValidDate(LocalDate date) {
+        if (date == null) {
+            return false;
         }
+        return !date.isAfter(LocalDate.now());
+    }
 
-        // If all checks pass, the date is valid
-        return true;
+    //It checks that checkOutDate is not Null and allows any date (future or past).
+    public static boolean isValidCheckOutDate(LocalDate checkOutDate) {
+        return checkOutDate != null;
+    }
+
+    // Validates that the timestamp is not null and is not in the future (used for createdAt and updatedAt).
+    public static boolean isValidTimestamp(LocalDateTime timestamp) {
+        if (timestamp == null) {
+            return false;
+        }
+        return !timestamp.isAfter(LocalDateTime.now());
+    }
+
+    // Checks if both dates are not null and that check-in date is before check-out date.
+    public static boolean isValidBookingDates(LocalDate checkInDate, LocalDate checkOutDate) {
+        if (checkInDate == null || checkOutDate == null) {
+            return false;
+        }
+        return checkInDate.isBefore(checkOutDate);
     }
 
 
@@ -66,7 +96,7 @@ public class Helper {
 
     //Agnes
     public static boolean isValidPhoneNumber(String phoneNumber) {
-        if (validateStringDetails(phoneNumber)) {
+        if (isNullorEmpty(phoneNumber)) {
             return false;
         }
 
@@ -78,7 +108,7 @@ public class Helper {
     }
 
     public static boolean isValidEmail(String email) {
-        if (validateStringDetails(email)) {
+        if (isNullorEmpty(email)) {
             return false;
         }
         String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
@@ -88,7 +118,7 @@ public class Helper {
     }
 
     public static boolean isValidPassword(String password) {
-        if (validateStringDetails(password)) {
+        if (isNullorEmpty(password)) {
             return false;
         }
         //Checks if Password has at least one digit, one letter and is more than 8 characters long and No Special Characters.

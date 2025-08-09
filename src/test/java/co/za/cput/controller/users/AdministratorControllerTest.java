@@ -1,8 +1,10 @@
 package co.za.cput.controller.users;
 
+import co.za.cput.domain.generic.Contact;
 import co.za.cput.domain.users.Administrator;
+import co.za.cput.factory.generic.ContactFactory;
 import co.za.cput.factory.user.AdministratorFactory;
-import org.junit.jupiter.api.BeforeAll;
+
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -12,79 +14,76 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class AdministratorControllerTest {
 
-    private static Administrator administrator;
-
     @Autowired
     private TestRestTemplate restTemplate;
-    private  static final String BASE_URL = "http://localhost:8080/CPUTstudenthousingconnect/customer";
 
-    @BeforeAll
-    static void setUp() throws Exception {
+    private static final String BASE_URL = "http://localhost:8080/HouseConnect/Administrator";
 
-        administrator = AdministratorFactory.createAdministrator(
-                "Agnes",
-                "Mabusela",
-                "agnes@gmail.com",
-                "0817281929",
-                "password123"
-                );
+    private static final Contact contact = ContactFactory.createContact(
+            "admin@gmail.com", "0821234567", "0832345678", true, true,
+            Contact.PreferredContactMethod.EMAIL
+    );
 
-    }
+    private static final Administrator administrator = AdministratorFactory.createAdministrator(
+            "Kwanda", "Twalo", "StrongPass123", Administrator.AdminRoleStatus.ACTIVE, contact, null
+    );
+
+    private static Administrator adminWithId;
+
     @Test
     void a_create() {
-        String url = BASE_URL + "/create";
-        ResponseEntity<Administrator> postResponse = restTemplate.postForEntity(url, administrator, Administrator.class);
-        assertNotNull(postResponse);
-        Administrator administratorSaved = postResponse.getBody();
-        assertEquals(administrator.getAdminID(), administratorSaved.getAdminID());
-        System.out.println("Created: "+ administratorSaved);
+        ResponseEntity<Administrator> response = this.restTemplate.postForEntity(BASE_URL + "/create", administrator, Administrator.class);
+        assertNotNull(response.getBody());
+        adminWithId = response.getBody();
+        System.out.println("Created admin: " + adminWithId);
+
     }
 
     @Test
     void b_read() {
-        String url = BASE_URL + "/read" + administrator.getAdminID();
+        String url = BASE_URL + "/read/" + adminWithId.getAdminID();
         ResponseEntity<Administrator> response = this.restTemplate.getForEntity(url, Administrator.class);
-        assertNotEquals(administrator.getAdminID(), response.getBody().getAdminID());
-        System.out.println("Read: "+ response.getBody());
-    }
-
-    @Test
-    void update() {
-        Administrator updatedCustomer = new Administrator.Builder().copy(administrator).setAdminName("Madikila").build();
-        String url = BASE_URL + "/update";
-        ResponseEntity<Administrator> response = this.restTemplate.postForEntity(url, updatedCustomer, Administrator.class);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
-        assertEquals(updatedCustomer.getAdminName(), response.getBody().getAdminName());
-        System.out.println("Updated: "+ response.getBody());
-    }
-
-    @Test
-    void delete() {
-        String url = BASE_URL + "/delete" + administrator.getAdminID();
-        this.restTemplate.delete(url);
-
-        ResponseEntity<Administrator> response = this.restTemplate.getForEntity(BASE_URL+"/read/"+administrator.getAdminID(), Administrator.class);
-        assertNull(response.getBody());
-        System.out.println("Deleted: "+ response.getBody());
-    }
-
-    @Test
-    void getAll() {
-        String url = BASE_URL + "/getAll";
-        ResponseEntity<Administrator[]> response = this.restTemplate.getForEntity(url, Administrator[].class);
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().length>0);
-        System.out.println("GetAll: ");
-        for (Administrator administrator : response.getBody()) {
-            System.out.println(administrator);
-        }
+        System.out.println("Read admin: " + response.getBody());
+    }
 
+    @Test
+    void c_update() {
+        Administrator updated = new Administrator.Builder()
+                .copy(adminWithId)
+                .setAdminRoleStatus(Administrator.AdminRoleStatus.SUSPENDED)
+                .build();
+        this.restTemplate.put(BASE_URL + "/update", updated);
+        ResponseEntity<Administrator> response =
+                this.restTemplate.getForEntity(BASE_URL + "/read/" + updated.getAdminID(), Administrator.class);
+        assertEquals(Administrator.AdminRoleStatus.SUSPENDED, response.getBody().getAdminRoleStatus());
+        System.out.println("Updated admin: " + response.getBody());
+    }
+
+    @Test
+    void d_getAllAdministrators() {
+        ResponseEntity<Administrator[]> response =
+                this.restTemplate.getForEntity(BASE_URL + "/getAllAdministrators", Administrator[].class);
+        assertNotNull(response.getBody());
+        System.out.println("All admins: ");
+        for (Administrator a : response.getBody()) {
+            System.out.println(a);
+        }
+    }
+
+    @Test
+    void e_delete() {
+        restTemplate.delete(BASE_URL + "/delete/" + adminWithId.getAdminID());
+        ResponseEntity<Administrator> response =
+                this.restTemplate.getForEntity(BASE_URL + "/read/" + adminWithId.getAdminID(), Administrator.class);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }
+

@@ -1,22 +1,51 @@
 package co.za.cput.factory.business;
 
+import co.za.cput.domain.business.Accommodation;
 import co.za.cput.domain.business.Booking;
+import co.za.cput.domain.business.Review;
+import co.za.cput.domain.users.Student;
 import co.za.cput.util.Helper;
-import java.util.Date;
-import java.util.UUID;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class BookingFactory {
-    public static Booking createBooking(Date requestDate, Booking.BookingStatus bookingStatus) {
+    public static Booking createBooking(LocalDate requestDate,
+                                        LocalDate checkInDate,
+                                        LocalDate checkOutDate,
+                                        double totalAmount,
+                                        LocalDateTime createdAt,
+                                        LocalDateTime updatedAt,
+                                        Booking.PaymentStatus paymentStatus,
+                                        Booking.BookingStatus bookingStatus,
+                                        Student student,
+                                        Accommodation accommodation,
+                                        Review review) {
 
-        if (!Helper.validateRequestDate(requestDate)) {
+        if (!Helper.isValidDate(requestDate) ||
+                !Helper.isValidDate(checkInDate) ||
+                !Helper.isValidCheckOutDate(checkOutDate) ||
+                !Helper.isValidBookingDates(checkInDate, checkOutDate) ||
+                !Helper.isValid_DecimalNumber(totalAmount) ||
+                !Helper.isValidTimestamp(createdAt) ||
+                !Helper.isValidTimestamp(updatedAt)
+                ) {
             return null;
         }
 
+
         return new Booking.Builder()
                 .setRequestDate(requestDate)
-                .setStatus(bookingStatus)
+                .setCheckInDate(checkInDate)
+                .setCheckOutDate(checkOutDate)
+                .setTotalAmount(totalAmount)
+                .setCreatedAt(createdAt)
+                .setUpdatedAt(updatedAt)
+                .setPaymentStatus(paymentStatus)
+                .setBookingStatus(bookingStatus)
+                .setStudent(student)
+                .setAccommodation(accommodation)
+                .setReview(review)
                 .build();
-
-
     }
 }
