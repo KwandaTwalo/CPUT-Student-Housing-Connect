@@ -8,7 +8,6 @@ import co.za.cput.domain.users.Landlord;
 import co.za.cput.repository.business.AccommodationRepository;
 import co.za.cput.repository.users.LandLordRepository;
 import co.za.cput.service.users.ILandLordService;
-import co.za.cput.util.LinkingEntitiesHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

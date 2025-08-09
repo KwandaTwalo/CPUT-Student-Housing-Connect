@@ -3,7 +3,6 @@ package co.za.cput.service.users.implementation;
 import co.za.cput.domain.business.Verification;
 import co.za.cput.domain.users.Administrator;
 import co.za.cput.repository.business.AccommodationRepository;
-import co.za.cput.repository.business.VerificationRepository;
 import co.za.cput.repository.users.AdministratorRepository;
 import co.za.cput.repository.users.LandLordRepository;
 import co.za.cput.service.users.IAdministratorService;
