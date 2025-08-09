@@ -1,4 +1,7 @@
 package co.za.cput.controller.business;
+//Firstname: Siyabonga
+//Lastname: Jiyane
+//Student Number: 222359676
 
 import co.za.cput.domain.business.Verification;
 import co.za.cput.service.business.implementation.VerificationServiceImpl;
@@ -12,7 +15,8 @@ import java.util.List;
 public class VerificationController {
 
     private VerificationServiceImpl verificationService;
-
+  
+    @Autowired
     public VerificationController(VerificationServiceImpl verificationService) {
         this.verificationService = verificationService;
     }
@@ -57,5 +61,5 @@ public class VerificationController {
     public void delete(@PathVariable Long verificationID) {
         verificationService.delete(verificationID);
     }
-
 }
+

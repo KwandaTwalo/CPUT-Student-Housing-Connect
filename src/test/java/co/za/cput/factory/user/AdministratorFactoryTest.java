@@ -48,5 +48,4 @@ class AdministratorFactoryTest {
         assertNull(invalidAdmin, "Factory should return null for invalid password");
         System.out.println("Invalid password admin: " + invalidAdmin);
     }
-
 }

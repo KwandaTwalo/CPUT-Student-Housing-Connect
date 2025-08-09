@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.MethodName.class)
-
 class AdministratorServiceImplTest {
 
     @Autowired
@@ -83,3 +82,4 @@ class AdministratorServiceImplTest {
         System.out.println("Deleted: " + adminWithId);
     }
 }
+

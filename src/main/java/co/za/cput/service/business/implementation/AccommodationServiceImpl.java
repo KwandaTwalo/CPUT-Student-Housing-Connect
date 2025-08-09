@@ -1,4 +1,7 @@
 package co.za.cput.service.business.implementation;
+//Firstname:        Sinhle Xiluva
+//LastName:         Mthethwa
+//Student Number:   221802797.
 
 import co.za.cput.domain.business.Accommodation;
 import co.za.cput.repository.business.AccommodationRepository;
@@ -53,5 +56,5 @@ public class AccommodationServiceImpl implements IAccommodationService {
         accommodationRepository.deleteById(Id);
     }
 
-
 }
+

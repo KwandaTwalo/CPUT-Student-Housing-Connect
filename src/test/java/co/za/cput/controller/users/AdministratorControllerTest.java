@@ -4,6 +4,7 @@ import co.za.cput.domain.generic.Contact;
 import co.za.cput.domain.users.Administrator;
 import co.za.cput.factory.generic.ContactFactory;
 import co.za.cput.factory.user.AdministratorFactory;
+
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -42,6 +43,7 @@ class AdministratorControllerTest {
         assertNotNull(response.getBody());
         adminWithId = response.getBody();
         System.out.println("Created admin: " + adminWithId);
+
     }
 
     @Test
@@ -84,3 +86,4 @@ class AdministratorControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }
+

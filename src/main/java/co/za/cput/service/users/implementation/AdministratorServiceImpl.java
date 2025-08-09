@@ -8,6 +8,7 @@ import co.za.cput.repository.users.AdministratorRepository;
 import co.za.cput.repository.users.LandLordRepository;
 import co.za.cput.service.users.IAdministratorService;
 import co.za.cput.util.LinkingEntitiesHelper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +68,7 @@ public class AdministratorServiceImpl implements IAdministratorService {
 
     @Override
     public Administrator read(Long Id) {
-        return administratorRepository.findById(Id).orElse(null);
+        return administratorRepository.findById(Id).orElse(null);  
     }
 
     @Override
@@ -83,5 +84,6 @@ public class AdministratorServiceImpl implements IAdministratorService {
     @Override
     public void delete(Long Id) {
         administratorRepository.deleteById(Id);
+
     }
 }

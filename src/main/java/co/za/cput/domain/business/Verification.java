@@ -24,6 +24,10 @@ public class Verification {
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus;
 
+    public String getVerificationId() {
+        return verificationID.toString();
+    }
+
     public enum VerificationStatus {
         PENDING,
         APPROVED,

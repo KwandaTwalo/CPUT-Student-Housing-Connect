@@ -48,6 +48,7 @@ public class Administrator {
         this.verifications = builder.verifications;
     }
 
+
     public Long getAdminID() {
         return adminID;
     }

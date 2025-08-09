@@ -1,10 +1,10 @@
 package co.za.cput.controller.business;
 
+
 import co.za.cput.domain.business.Accommodation;
 import co.za.cput.service.business.implementation.AccommodationServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
