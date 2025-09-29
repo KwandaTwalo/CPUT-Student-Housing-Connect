@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import LandlordLogin from "./pages/Landlord/LandlordAuth/LandlordLogin";
 import LandlordSignUp from "./pages/Landlord/LandlordAuth/LandlordSignUp";
@@ -9,10 +9,14 @@ import AddListing from "./pages/Landlord/AddListings/AddListing";
 import AssignAccommodation from "./pages/Landlord/AssignAccommodation/AssignAccommodation";
 import ApplicationsRequests from "./pages/Landlord/ApplicationRequests/ApplicationRequests";
 import LandlordProfile from "./pages/Landlord/LndlordProfile";
+import AdminDashboard from "./pages/Administrator/Dashboard/Dashboard";
+import AdminSignUp from "./pages/Administrator/AdminSignUp/AdminSignUp";
+import VerifyLandlords from "./pages/Administrator/VerifyLandlords/VerifyLandlords";
+import VerifyListings from "./pages/Administrator/VerifyListings/VerifyListings";
 
 
 import LandingPage from "./pages/Shared/LandingPage";
-import LoginPage from "./pages/Shared/Login";   
+import LoginPage from "./pages/Shared/Login";
 import SignUpPage from "./pages/Shared/SignUp"; 
 
 function App() {
@@ -32,6 +36,12 @@ function App() {
         <Route path="/add-listing" element={<AddListing />} />
         <Route path="/applications-requests" element={<ApplicationsRequests />} />
         <Route path="/assign-accommodation" element={<AssignAccommodation />} />
+
+          {/* Administrator routes */}
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/signup" element={<AdminSignUp />} />
+          <Route path="/admin/verify-landlords" element={<VerifyLandlords />} />
+          <Route path="/admin/verify-listings" element={<VerifyListings />} />
 
       </Routes>
     </Router>
