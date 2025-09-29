@@ -5,7 +5,7 @@ import {
     FaClock,
     FaDatabase,
     FaHome,
-    FaLineChart,
+    FaChartLine,
     FaSearch,
     FaShieldAlt,
     FaUserCheck,
@@ -361,7 +361,7 @@ function Dashboard() {
 
                     <div style={{ marginTop: "26px", display: "grid", gap: "12px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                            <FaLineChart size={18} color="#2563eb" />
+                            <FaChartLine size={18} color="#2563eb" />
                             <strong style={{ fontSize: "16px" }}>Verification throughput trend</strong>
                         </div>
                         <div

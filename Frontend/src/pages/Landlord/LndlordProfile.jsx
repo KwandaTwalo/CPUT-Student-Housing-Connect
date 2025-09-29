@@ -50,7 +50,7 @@ export default function LandlordProfilePage() {
             </Link>
           </li>
           <li>
-            <Link to="/profile">
+            <Link to="/landlord-profile">
               <FaUser style={{ marginRight: "8px" }} /> Profile
             </Link>
           </li>

@@ -215,21 +215,21 @@ function VerifyListings() {
         const icon = status === "Approved" ? <FaCheckCircle size={13} /> : <FaExclamationTriangle size={13} />;
         return (
             <span style={{ ...badgeStyles, background: palette.bg, color: palette.colour }}>
-        {icon}
+                {icon}
                 {status}
-      </span>
+            </span>
         );
     };
 
     const pendingCount = listings.filter((listing) => listing.status === "Pending" || listing.status === "Needs Info").length;
     const approvedCount = listings.filter((listing) => listing.status === "Approved").length;
 
-  return (
-    <div>
-        <div style={pageStyles}>
-            <div style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gap: "28px" }}>
-                <header
-                    style={{
+    return (
+        <div>
+            <div style={pageStyles}>
+                <div style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gap: "28px" }}>
+                    <header
+                        style={{
                         display: "flex",
                         flexWrap: "wrap",
                         alignItems: "flex-start",
@@ -645,9 +645,10 @@ function VerifyListings() {
                         </div>
                     </div>
                 )}
+                </div>
             </div>
-    </div>
-  );
+        </div>
+    );
 }
 
-        export default VerifyListings;
+export default VerifyListings;

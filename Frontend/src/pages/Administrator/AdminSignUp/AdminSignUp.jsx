@@ -591,8 +591,5 @@ function AdminSignUp() {
         </div>
     );
 }
-    </div>
-  );
-}
 
 export default AdminSignUp;

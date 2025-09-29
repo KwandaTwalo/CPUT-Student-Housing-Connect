@@ -217,18 +217,18 @@ function VerifyLandlords() {
 
         return (
             <span style={{ ...badgeStyles, background: palette.bg, color: palette.colour }}>
-        {icon}
+                {icon}
                 {status}
-      </span>
+            </span>
         );
     };
 
-  return (
-    <div>
-        <div style={pageStyles}>
-            <div style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gap: "28px" }}>
-                <header
-                    style={{
+    return (
+        <div>
+            <div style={pageStyles}>
+                <div style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gap: "28px" }}>
+                    <header
+                        style={{
                         display: "flex",
                         flexWrap: "wrap",
                         alignItems: "flex-start",
@@ -624,9 +624,10 @@ function VerifyLandlords() {
                         </div>
                     </div>
                 )}
+                </div>
             </div>
-    </div>
-  );
+        </div>
+    );
 }
 
-        export default VerifyLandlords;
+export default VerifyLandlords;

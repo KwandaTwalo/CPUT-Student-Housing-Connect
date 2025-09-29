@@ -9,6 +9,7 @@ import AddListing from "./pages/Landlord/AddListings/AddListing";
 import AssignAccommodation from "./pages/Landlord/AssignAccommodation/AssignAccommodation";
 import ApplicationsRequests from "./pages/Landlord/ApplicationRequests/ApplicationRequests";
 import LandlordProfile from "./pages/Landlord/LndlordProfile";
+import EditProfile from "./pages/Landlord/EditProfile";
 import AdminDashboard from "./pages/Administrator/Dashboard/Dashboard";
 import AdminSignUp from "./pages/Administrator/AdminSignUp/AdminSignUp";
 import VerifyLandlords from "./pages/Administrator/VerifyLandlords/VerifyLandlords";
@@ -36,8 +37,10 @@ function App() {
         <Route path="/add-listing" element={<AddListing />} />
         <Route path="/applications-requests" element={<ApplicationsRequests />} />
         <Route path="/assign-accommodation" element={<AssignAccommodation />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
 
-          {/* Administrator routes */}
+
+        {/* Administrator routes */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/signup" element={<AdminSignUp />} />
           <Route path="/admin/verify-landlords" element={<VerifyLandlords />} />
