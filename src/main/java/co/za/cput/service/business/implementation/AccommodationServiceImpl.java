@@ -23,6 +23,7 @@ public class AccommodationServiceImpl implements IAccommodationService {
     public AccommodationServiceImpl(AccommodationRepository accommodationRepository,
                                     LandLordRepository landLordRepository) {
         this.accommodationRepository = accommodationRepository;
+        this.landLordRepository = landLordRepository;
     }
 
     @Override
