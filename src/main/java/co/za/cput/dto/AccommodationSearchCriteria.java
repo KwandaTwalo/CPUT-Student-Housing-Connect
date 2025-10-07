@@ -21,51 +21,51 @@ public record AccommodationSearchCriteria(
         Accommodation.AccommodationStatus status,
         Long landlordId
 ) {
-    public Optional<Double> minRent() {
+    public Optional<Double> minRentOptional() {
         return Optional.ofNullable(minRent);
     }
 
-    public Optional<Double> maxRent() {
+    public Optional<Double> maxRentOptional() {
         return Optional.ofNullable(maxRent);
     }
 
-    public Optional<Boolean> wifiAvailable() {
+    public Optional<Boolean> wifiAvailableOptional() {
         return Optional.ofNullable(wifiAvailable);
     }
 
-    public Optional<Boolean> furnished() {
+    public Optional<Boolean> furnishedOptional() {
         return Optional.ofNullable(furnished);
     }
 
-    public Optional<Boolean> utilitiesIncluded() {
+    public Optional<Boolean> utilitiesIncludedOptional() {
         return Optional.ofNullable(utilitiesIncluded);
     }
 
-    public Optional<Double> maxDistanceFromCampus() {
+    public Optional<Double> maxDistanceFromCampusOptional() {
         return Optional.ofNullable(maxDistanceFromCampus);
     }
 
-    public Optional<String> city() {
+    public Optional<String> cityOptional() {
         return Optional.ofNullable(city);
     }
 
-    public Optional<String> suburb() {
+    public Optional<String> suburbOptional() {
         return Optional.ofNullable(suburb);
     }
 
-    public Optional<Accommodation.RoomType> roomType() {
+    public Optional<Accommodation.RoomType> roomTypeOptional() {
         return Optional.ofNullable(roomType);
     }
 
-    public Optional<Accommodation.BathroomType> bathroomType() {
+    public Optional<Accommodation.BathroomType> bathroomTypeOptional() {
         return Optional.ofNullable(bathroomType);
     }
 
-    public Optional<Accommodation.AccommodationStatus> status() {
+    public Optional<Accommodation.AccommodationStatus> statusOptional() {
         return Optional.ofNullable(status);
     }
 
-    public Optional<Long> landlordId() {
+    public Optional<Long> landlordIdOptional() {
         return Optional.ofNullable(landlordId);
     }
 }

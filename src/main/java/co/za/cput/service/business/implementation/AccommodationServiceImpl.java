@@ -63,64 +63,63 @@ public class AccommodationServiceImpl implements IAccommodationService {
         Specification<Accommodation> specification = Specification.where(null);
 
         if (criteria != null) {
-            specification = criteria.minRent()
+            specification = criteria.minRentOptional()
                     .map(AccommodationSpecifications::rentGreaterThanOrEqual)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.maxRent()
+            specification = criteria.maxRentOptional()
                     .map(AccommodationSpecifications::rentLessThanOrEqual)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.wifiAvailable()
+            specification = criteria.wifiAvailableOptional()
                     .map(AccommodationSpecifications::hasWifi)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.furnished()
+            specification = criteria.furnishedOptional()
                     .map(AccommodationSpecifications::isFurnished)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.utilitiesIncluded()
+            specification = criteria.utilitiesIncludedOptional()
                     .map(AccommodationSpecifications::utilitiesIncluded)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.maxDistanceFromCampus()
+            specification = criteria.maxDistanceFromCampusOptional()
                     .map(AccommodationSpecifications::withinDistance)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.roomType()
+            specification = criteria.roomTypeOptional()
                     .map(AccommodationSpecifications::hasRoomType)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.bathroomType()
+            specification = criteria.bathroomTypeOptional()
                     .map(AccommodationSpecifications::hasBathroomType)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.status()
+            specification = criteria.statusOptional()
                     .map(AccommodationSpecifications::hasStatus)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.city()
+            specification = criteria.cityOptional()
                     .filter(city -> !city.isBlank())
                     .map(AccommodationSpecifications::matchesCity)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.suburb()
-                    .filter(suburb -> !suburb.isBlank())
+            specification = criteria.suburbOptional()
                     .map(AccommodationSpecifications::matchesSuburb)
                     .map(specification::and)
                     .orElse(specification);
 
-            specification = criteria.landlordId()
+            specification = criteria.landlordIdOptional()
                     .map(AccommodationSpecifications::ownedBy)
                     .map(specification::and)
                     .orElse(specification);
