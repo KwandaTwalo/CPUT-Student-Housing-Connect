@@ -30,7 +30,6 @@ class LandlordFactoryTest {
             "Twalo",
             true,
             LocalDate.of(2024, 12, 1),
-            "ValidPass123",
             contact,
             null
     );
@@ -51,7 +50,6 @@ class LandlordFactoryTest {
                 "Doe",
                 true,
                 futureDate,
-                "ValidPass123",
                 contact,
                 Collections.emptyList()
         );
@@ -60,7 +58,7 @@ class LandlordFactoryTest {
         System.out.println("Landlord should be null due to invalid dateRegistered: " + landlord);
     }
 
-    @Test
+  /*  @Test
     void testInvalidPassword() {
         // password without digits or too short (invalid)
         String invalidPassword = "short";
@@ -77,6 +75,6 @@ class LandlordFactoryTest {
 
         assertNull(landlord);
         System.out.println("Landlord should be null due to invalid password: " + landlord);
-    }
+    }*/
 }
 
