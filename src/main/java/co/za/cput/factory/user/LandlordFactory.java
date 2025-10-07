@@ -14,18 +14,17 @@ import java.util.List;
 
 public class LandlordFactory {
     public static Landlord createLandlord(String landlordFirstName,
-                                   String landlordLastName,
-                                   boolean isVerified,
-                                   LocalDate dateRegistered,
-                                   String password,
-                                   Contact contact,
-                                   List<Accommodation> accommodationList
+                                          String landlordLastName,
+                                          boolean isVerified,
+                                          LocalDate dateRegistered,
+                                          //String password,
+                                          Contact contact,
+                                          List<Accommodation> accommodationList
     ) {
 
         if (Helper.isNullorEmpty(landlordFirstName) ||
                 Helper.isNullorEmpty(landlordLastName) ||
-                !Helper.isValidDate(dateRegistered) ||
-                !Helper.isValidPassword(password)) {
+                !Helper.isValidDate(dateRegistered)) {
             return null;
         }
 
@@ -34,7 +33,7 @@ public class LandlordFactory {
                 .setLandlordLastName(landlordLastName)
                 .setVerified(isVerified)
                 .setDateRegistered(dateRegistered)
-                .setPassword(password)
+                //.setPassword(password)
                 .setContact(contact)
                 .setAccommodationList(accommodationList)
                 .build();

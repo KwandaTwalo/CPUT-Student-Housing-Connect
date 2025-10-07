@@ -23,7 +23,7 @@ public class Landlord {
     private String landlordLastName;
     private boolean isVerified; //To indicate if the landlord's identity or business has been verified by admin.
     private LocalDate dateRegistered; //Date the LandLord registered to the system.
-    private String password;
+    //private String password;
 
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -44,7 +44,7 @@ public class Landlord {
         this.landlordLastName = builder.landlordLastName;
         this.isVerified = builder.isVerified;
         this.dateRegistered = builder.dateRegistered;
-        this.password = builder.password;
+        //this.password = builder.password;
         this.contact = builder.contact;
         this.accommodationList = builder.accommodationList;
     }
@@ -69,10 +69,10 @@ public class Landlord {
         return dateRegistered;
     }
 
-    public String getPassword() {
+    /*public String getPassword() {
         return password;
     }
-
+*/
     public Contact getContact() {
         return contact;
     }
@@ -89,7 +89,7 @@ public class Landlord {
                 ", landlordLastName='" + landlordLastName + '\'' +
                 ", isVerified=" + isVerified +
                 ", dateRegistered=" + dateRegistered +
-                ", password='" + password + '\'' +
+                //", password='" + password + '\'' +
                 ", contact=" + contact +
                 ", accommodationID(s)=" + (accommodationList == null ? "[]" :
                 accommodationList.stream()
@@ -105,7 +105,7 @@ public class Landlord {
         private String landlordLastName;
         private boolean isVerified;
         private LocalDate dateRegistered;
-        private String password;
+        //private String password;
         private Contact contact;
         private List<Accommodation> accommodationList;
 
@@ -134,10 +134,10 @@ public class Landlord {
             return this;
         }
 
-        public Builder setPassword(String password) {
+        /*public Builder setPassword(String password) {
             this.password = password;
             return this;
-        }
+        }*/
 
         public Builder setContact(Contact contact) {
             this.contact = contact;
@@ -155,7 +155,7 @@ public class Landlord {
             this.landlordLastName = landlord.getLandlordLastName();
             this.isVerified = landlord.isVerified();
             this.dateRegistered = landlord.getDateRegistered();
-            this.password = landlord.getPassword();
+            //this.password = landlord.getPassword();
             this.contact = landlord.getContact();
             this.accommodationList = landlord.getAccommodationList();
             return this;
