@@ -208,11 +208,11 @@ public class Landlord {
 /*
 {
         "landlordFirstName": "Thabo",
-        "landlordLastName": "Nkosi",
-        "isVerified": true,
-        "dateRegistered": "2025-08-04",
-        "password": "StrongP@ssw0rd!",
-        "contact": {
+    "landlordLastName": "Nkosi",
+    "isVerified": true,
+    "dateRegistered": "2025-08-04",
+    "password": "StrongP@ssw0rd!",
+    "contact": {
         "email": "thabo.nkosi@example.com",
         "phoneNumber": "0721234567",
         "alternatePhoneNumber": "0837654321",
@@ -220,13 +220,24 @@ public class Landlord {
         "isPhoneVerified": true,
         "preferredContactMethod": "EMAIL"
         },
-        "accommodationList": [
+    "accommodationList": [
         {
         "rent": 3500.0,
-        "wifiAvailable": true,
-        "furnished": true,
-        "distanceFromCampus": 1.5,
-        "utilitiesIncluded": true,
-        "roomType": "SINGLE",
-        "bathroomType": "PRIVATE",
-        "accommodationStatus": "AVAILABLE",
+            "wifiAvailable": true,
+            "furnished": true,
+            "distanceFromCampus": 1.5,
+            "utilitiesIncluded": true,
+            "roomType": "SINGLE",
+            "bathroomType": "PRIVATE",
+            "accommodationStatus": "AVAILABLE",
+            "address": {
+                "streetNumber": "12A",
+                "streetName": "Dorset Street",
+                "suburb": "Salt River",
+                "city": "Cape Town",
+                "postalCode": 7925
+            }
+        }
+    ]
+}
+*/
