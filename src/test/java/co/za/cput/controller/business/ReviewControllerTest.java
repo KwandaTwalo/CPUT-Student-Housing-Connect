@@ -35,7 +35,7 @@ class ReviewControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private static final String BASE_URL = "http://localhost:8080/HouseConnect/Review";
+    private static final String BASE_URL = "/HouseConnect/Review";
 
 
     @Test

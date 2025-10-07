@@ -26,7 +26,7 @@ class StudentControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private static final String BASE_URL = "http://localhost:8080/HouseConnect/Student";
+    private static final String BASE_URL = "/HouseConnect/Student";
 
     private static final Contact contact = ContactFactory.createContact(
             "Abigail@yahoo.com", "0712345678", "0723456789", true, true,

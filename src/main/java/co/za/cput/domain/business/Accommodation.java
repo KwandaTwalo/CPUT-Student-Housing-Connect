@@ -57,7 +57,7 @@ public class Accommodation {
     @JoinColumn(name = "address_ID", referencedColumnName = "addressID")
     private Address address;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "landLord_ID", referencedColumnName = "landLordID")
     @JsonBackReference("landlord-accommodation")
     private Landlord landlord;
