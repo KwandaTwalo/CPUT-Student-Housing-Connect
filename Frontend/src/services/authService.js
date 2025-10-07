@@ -1,25 +1,6 @@
-const AUTH_STORAGE_KEY = "cput_shc_active_user";
+import apiClient from "./apiClient";
 
-const mockUsers = [
-    {
-        role: "student",
-        email: "student@example.com",
-        password: "Student123!",
-        name: "Tumi Jacobs",
-    },
-    {
-        role: "landlord",
-        email: "landlord@example.com",
-        password: "Landlord123!",
-        name: "Sipho Mbeki",
-    },
-    {
-        role: "admin",
-        email: "admin@example.com",
-        password: "Admin123!",
-        name: "Agnes Mokoena",
-    },
-];
+const AUTH_STORAGE_KEY = "cput_shc_active_user";
 
 const persistUser = (user) => {
     if (typeof window === "undefined") return;
@@ -43,43 +24,40 @@ const resolveStoredUser = () => {
     }
 };
 
-export const login = (role, email, password) =>
-    new Promise((resolve, reject) => {
-        if (!role) {
-            reject(new Error("Please choose a role to sign in."));
-            return;
-        }
+export const login = async (role, email, password) => {
+    if (!email || !password) {
+        throw new Error("Email and password are required.");
+    }
 
-        if (!email || !password) {
-            reject(new Error("Email and password are required."));
-            return;
-        }
+    const payload = {
+        email: email.trim(),
+        password,
+    };
 
-        const normalisedEmail = email.trim().toLowerCase();
+    const response = await apiClient.post("/auth/login", payload);
 
-        const matchedUser = mockUsers.find(
-            (user) =>
-                user.role === role &&
-                user.email.toLowerCase() === normalisedEmail &&
-                user.password === password
-        );
+    if (!response || !response.authenticated) {
+        throw new Error(response?.message || "Unable to authenticate with the supplied credentials.");
+    }
 
-        setTimeout(() => {
-            if (!matchedUser) {
-                reject(new Error("Invalid email or password for the selected role."));
-                return;
-            }
+    const resolvedRole = response.role?.toLowerCase();
 
-            const sessionUser = {
-                role: matchedUser.role,
-                email: matchedUser.email,
-                name: matchedUser.name,
-            };
+    if (role && resolvedRole && role !== resolvedRole) {
+        throw new Error("The selected role does not match this account.");
+    }
 
-            persistUser(sessionUser);
-            resolve(sessionUser);
-        }, 400);
-    });
+    const sessionUser = {
+        role: resolvedRole,
+        email: response.email,
+        name: [response.firstName, response.lastName].filter(Boolean).join(" ").trim(),
+        verified: response.verified,
+        userId: response.userId,
+        adminRoleStatus: response.adminRoleStatus,
+    };
+
+    persistUser(sessionUser);
+    return sessionUser;
+};
 
 export const logout = () => {
     clearPersistedUser();
@@ -89,9 +67,10 @@ export const getCurrentUser = () => resolveStoredUser();
 
 export const isAuthenticated = () => Boolean(resolveStoredUser());
 
-export default {
+const authService = {
     login,
     logout,
     getCurrentUser,
     isAuthenticated,
 };
+export default authService;

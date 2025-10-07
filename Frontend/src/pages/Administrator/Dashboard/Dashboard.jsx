@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     FaBell,
     FaClipboardCheck,
@@ -12,6 +12,8 @@ import {
     FaUserShield,
     FaUsers,
 } from "react-icons/fa";
+import { fetchDashboardOverview } from "../../../services/adminService";
+
 
 const pageStyles = {
     minHeight: "100vh",
@@ -43,6 +45,42 @@ const badgeStyles = {
 
 function Dashboard() {
     const [timeframe, setTimeframe] = useState("monthly");
+    const [overview, setOverview] = useState(null);
+    const [isOverviewLoading, setIsOverviewLoading] = useState(true);
+    const [overviewError, setOverviewError] = useState("");
+
+    useEffect(() => {
+        const resolveOverview = async () => {
+            try {
+                const data = await fetchDashboardOverview();
+                setOverview(data);
+            } catch (error) {
+                setOverviewError(error.message);
+            } finally {
+                setIsOverviewLoading(false);
+            }
+        };
+
+        resolveOverview();
+    }, []);
+
+    const overviewMetrics = useMemo(() => {
+        if (!overview) return [];
+        return [
+            { label: "Students", value: overview.totalStudents, icon: <FaUsers size={20} color="#2563eb" /> },
+            { label: "Landlords", value: overview.totalLandlords, icon: <FaUserCheck size={20} color="#16a34a" /> },
+            { label: "Verified landlords", value: overview.verifiedLandlords, icon: <FaShieldAlt size={20} color="#0f766e" /> },
+            { label: "Listings", value: overview.totalAccommodations, icon: <FaHome size={20} color="#f97316" /> },
+            { label: "Pending checks", value: overview.pendingVerifications, icon: <FaClipboardCheck size={20} color="#d97706" /> },
+            { label: "Active bookings", value: overview.activeBookings, icon: <FaClock size={20} color="#7c3aed" /> },
+        ];
+    }, [overview]);
+
+    const occupancyText = useMemo(() => {
+        if (!overview) return "0% occupancy";
+        const value = typeof overview.occupancyRate === "number" ? overview.occupancyRate : Number(overview.occupancyRate || 0);
+        return `${value.toFixed(2)}% occupancy`;
+    }, [overview]);
 
     const metricSets = useMemo(
         () => ({
@@ -225,8 +263,8 @@ function Dashboard() {
                             Operational health dashboard
                         </h1>
                         <p style={{ maxWidth: "560px", lineHeight: 1.65, color: "#475569" }}>
-                            Monitor verification throughput, stay ahead of escalations, and keep a pulse on platform
-                            activity across students, landlords and listings.
+                            Monitor verification throughput, stay ahead of escalations, and keep a pulse on platform activity
+                            across students, landlords and listings.
                         </p>
                     </div>
                     <div style={{ ...cardStyles, width: "min(320px, 100%)", display: "grid", gap: "14px" }}>
@@ -259,6 +297,41 @@ function Dashboard() {
                         </button>
                     </div>
                 </header>
+
+                <section style={{ ...cardStyles, padding: "24px 28px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
+                        <div>
+                            <div style={badgeStyles}>Live platform stats</div>
+                            <h2 style={{ margin: "12px 0 4px", fontSize: "24px" }}>Current system overview</h2>
+                            <p style={{ margin: 0, color: "#475569" }}>{occupancyText}</p>
+                        </div>
+                        <div style={{ color: "#64748b", fontSize: "14px" }}>
+                            {overview?.generatedAt
+                                ? `Updated ${new Date(overview.generatedAt).toLocaleString()}`
+                                : isOverviewLoading
+                                    ? "Fetching metrics..."
+                                    : null}
+                        </div>
+                    </div>
+
+                    {overviewError && <div style={overviewErrorStyles}>{overviewError}</div>}
+
+                    {!overviewError && (
+                        <div style={overviewGridStyles}>
+                            {isOverviewLoading && overviewMetrics.length === 0 ? (
+                                <div style={loadingPillStyles}>Loading live metrics...</div>
+                            ) : (
+                                overviewMetrics.map((metric) => (
+                                    <div key={metric.label} style={overviewMetricStyles}>
+                                        <div>{metric.icon}</div>
+                                        <div style={{ fontSize: "28px", fontWeight: 700 }}>{metric.value}</div>
+                                        <div style={{ color: "#475569", fontSize: "14px" }}>{metric.label}</div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </section>
 
                 <section style={{ ...cardStyles, padding: "24px 28px" }}>
                     <div
@@ -353,8 +426,8 @@ function Dashboard() {
                                         color: item.change.startsWith("-") ? "#dc2626" : "#16a34a",
                                     }}
                                 >
-                  {item.change} vs previous {timeframe === "daily" ? "day" : timeframe === "weekly" ? "week" : "month"}
-                </span>
+                                    {item.change} vs previous {timeframe === "daily" ? "day" : timeframe === "weekly" ? "week" : "month"}
+                                </span>
                             </div>
                         ))}
                     </div>
@@ -407,62 +480,61 @@ function Dashboard() {
                                 Smart triage enabled
                             </div>
                         </div>
-                        <div style={{ display: "grid", gap: "14px" }}>
+                        <div style={{ display: "grid", gap: "12px" }}>
                             {verificationQueue.map((item) => (
                                 <div
                                     key={item.id}
                                     style={{
-                                        border: "1px solid rgba(148, 163, 184, 0.3)",
+                                        border: "1px solid rgba(226, 232, 240, 0.8)",
                                         borderRadius: "16px",
                                         padding: "16px",
-                                        background: "linear-gradient(135deg, rgba(248, 250, 255, 0.85), rgba(229, 236, 255, 0.6))",
                                         display: "grid",
-                                        gap: "10px",
-                                    }}
+                                        gap: "8px",
+                                        background: "linear-gradient(135deg, rgba(248, 250, 255, 0.85), rgba(229, 236, 255, 0.65))",                                    }}
                                 >
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <strong>{item.applicant}</strong>
+                                        <strong style={{ fontSize: "15px" }}>{item.applicant}</strong>
                                         <span
                                             style={{
-                                                padding: "4px 12px",
+                                                padding: "6px 12px",
                                                 borderRadius: "999px",
                                                 fontSize: "12px",
                                                 fontWeight: 600,
-                                                color: "#1f2937",
-                                                background: "rgba(148, 163, 184, 0.25)",
-                                            }}
-                                        >
-                      {item.type}
-                    </span>
-                                    </div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", color: "#475569", fontSize: "13px" }}>
-                                        <span>{item.submitted}</span>
-                                        <span>Risk: {item.riskScore}</span>
-                                    </div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <div
-                                            style={{
-                                                padding: "6px 14px",
-                                                borderRadius: "12px",
-                                                fontSize: "12px",
-                                                fontWeight: 600,
+
                                                 background: statusColors[item.status]?.bg,
                                                 color: statusColors[item.status]?.color,
                                             }}
                                         >
                                             {item.status}
-                                        </div>
+                                            </span>
+                                    </div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: "13px" }}>
+                                        <span>{item.type}</span>
+                                        <span>{item.submitted}</span>
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            fontSize: "13px",
+                                            color: "#475569",
+                                        }}
+                                    >
+                                        <span>Risk: {item.riskScore}</span>
                                         <button
                                             type="button"
                                             style={{
-                                                border: "none",
-                                                background: "transparent",
-                                                color: "#2563eb",
+                                                padding: "8px 12px",
+                                                borderRadius: "10px",
+                                                border: "1px solid rgba(37, 99, 235, 0.4)",
+                                                background: "rgba(59, 130, 246, 0.08)",
+                                                color: "#1d4ed8",
                                                 fontWeight: 600,
                                                 cursor: "pointer",
                                             }}
                                         >
-                                            Open record
+                                            Review dossier
                                         </button>
                                     </div>
                                 </div>
@@ -470,90 +542,79 @@ function Dashboard() {
                         </div>
                     </section>
 
-                    <section style={{ ...cardStyles, display: "grid", gap: "18px" }}>
-                        <h2 style={{ margin: 0, fontSize: "22px" }}>Recent admin activity</h2>
-                        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "14px" }}>
-                            {activityFeed.map((entry) => (
-                                <li
-                                    key={`${entry.time}-${entry.context}`}
-                                    style={{
-                                        display: "flex",
-                                        gap: "14px",
-                                        alignItems: "flex-start",
-                                        padding: "12px 0",
-                                        borderBottom: "1px solid rgba(226, 232, 240, 0.7)",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            width: "48px",
-                                            height: "48px",
-                                            borderRadius: "16px",
-                                            background: "rgba(59, 130, 246, 0.12)",
-                                            display: "grid",
-                                            placeItems: "center",
-                                            fontWeight: 700,
-                                            color: "#2563eb",
-                                        }}
-                                    >
-                                        {entry.time}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                            <strong>{entry.actor}</strong>
-                                            <span style={{ fontSize: "12px", color: "#94a3b8" }}>CPUT Admin</span>
-                                        </div>
-                                        <p style={{ margin: "4px 0", color: "#1e293b", fontWeight: 600 }}>{entry.action}</p>
-                                        <span style={{ fontSize: "13px", color: "#64748b" }}>{entry.context}</span>
-                                    </div>
-                                </li>
+                    <section style={{ ...cardStyles, display: "grid", gap: "20px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <h2 style={{ margin: 0, fontSize: "20px" }}>Activity feed</h2>
+                            <FaDatabase size={16} color="#94a3b8" />
+                        </div>
+                        <div style={{ display: "grid", gap: "16px" }}>
+                            {activityFeed.map((item) => (
+                                <div key={item.time} style={{ display: "grid", gap: "4px" }}>
+                                    <span style={{ fontSize: "12px", color: "#94a3b8" }}>{item.time}</span>
+                                    <div style={{ fontWeight: 600 }}>{item.actor}</div>
+                                    <div style={{ color: "#475569" }}>{item.action}</div>
+                                    <div style={{ fontSize: "13px", color: "#64748b" }}>{item.context}</div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
+                    </section>
+
+                    <section style={{ ...cardStyles, display: "grid", gap: "18px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <h2 style={{ margin: 0, fontSize: "20px" }}>Compliance coverage</h2>
+                            <FaUserShield size={18} color="#16a34a" />
+                        </div>
+                        <div style={{ display: "grid", gap: "14px" }}>
+                            {complianceAreas.map((area) => (
+                                <div key={area.name} style={{ display: "grid", gap: "6px" }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                                        <span>{area.name}</span>
+                                        <span>{area.completion}%</span>
+                                    </div>
+                                    {renderProgressBar(area.completion, "linear-gradient(135deg, #16a34a, #4ade80)")}
+                                </div>
+                            ))}
+                        </div>
                     </section>
                 </div>
-
-                <section style={{ ...cardStyles, display: "grid", gap: "20px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <h2 style={{ margin: 0, fontSize: "22px" }}>Risk &amp; compliance snapshot</h2>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#f97316", fontWeight: 600 }}>
-                            <FaUserShield />
-                            Automated policy checks enabled
-                        </div>
-                    </div>
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                            gap: "18px",
-                        }}
-                    >
-                        {complianceAreas.map((area) => (
-                            <div
-                                key={area.name}
-                                style={{
-                                    border: "1px solid rgba(148, 163, 184, 0.35)",
-                                    borderRadius: "18px",
-                                    padding: "18px",
-                                    display: "grid",
-                                    gap: "12px",
-                                    background: "linear-gradient(135deg, rgba(248, 250, 255, 0.85), rgba(229, 236, 255, 0.6))",
-                                }}
-                            >
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                    <FaDatabase size={18} color="#2563eb" />
-                                    <strong>{area.name} checks</strong>
-                                </div>
-                                {renderProgressBar(area.completion, "linear-gradient(135deg, #2563eb, #60a5fa)")}
-                                <span style={{ fontSize: "13px", color: "#64748b" }}>
-                  SLAs met for 98% of cases in the last {timeframe === "daily" ? "24 hours" : timeframe === "weekly" ? "7 days" : "30 days"}.
-                </span>
-                            </div>
-                        ))}
-                    </div>
-                </section>
             </div>
-    </div>
-  );
+            </div>
+            );
 }
+
+const overviewGridStyles = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+    gap: "18px",
+    marginTop: "24px",
+};
+
+const overviewMetricStyles = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    padding: "16px",
+    borderRadius: "18px",
+    backgroundColor: "rgba(241, 245, 249, 0.7)",
+    border: "1px solid rgba(148, 163, 184, 0.18)",
+};
+
+const loadingPillStyles = {
+    gridColumn: "1 / -1",
+    padding: "16px",
+    borderRadius: "14px",
+    textAlign: "center",
+    backgroundColor: "rgba(59, 130, 246, 0.12)",
+    color: "#1d4ed8",
+    fontWeight: 600,
+};
+
+const overviewErrorStyles = {
+    marginTop: "24px",
+    padding: "16px",
+    borderRadius: "14px",
+    backgroundColor: "rgba(239, 68, 68, 0.12)",
+    color: "#b91c1c",
+};
 
 export default Dashboard;

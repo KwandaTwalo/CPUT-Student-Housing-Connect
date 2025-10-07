@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { login as authenticate } from "../../services/authService";
 
@@ -8,13 +8,27 @@ const roles = [
   { id: "admin", label: "Administrator" },
 ];
 
-function Login({ defaultRole = "" }) {  const navigate = useNavigate();
+function Login({ defaultRole = "" }) {
+  const navigate = useNavigate();
   const location = useLocation();
   const [role, setRole] = useState(defaultRole);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(location.state?.message || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const resolveRedirect = useCallback((resolvedRole) => {
+    switch (resolvedRole) {
+      case "student":
+        return "/student/search";
+      case "landlord":
+        return "/landlord/dashboard";
+      case "admin":
+        return "/admin/dashboard";
+      default:
+        return location.state?.from?.pathname || "/";
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (defaultRole && role !== defaultRole) {
@@ -28,22 +42,6 @@ function Login({ defaultRole = "" }) {  const navigate = useNavigate();
     }
   }, [location.state]);
 
-  const redirectPath = useMemo(() => {
-    if (location.state?.from?.pathname) {
-      return location.state.from.pathname;
-    }
-
-    switch (role) {
-      case "student":
-        return "/student/search";
-      case "landlord":
-        return "/landlord/dashboard";
-      case "admin":
-        return "/admin/dashboard";
-      default:
-        return "/";
-    }
-  }, [location.state, role]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -56,8 +54,8 @@ function Login({ defaultRole = "" }) {  const navigate = useNavigate();
         setError("Unable to log in. Please try again.");
         return;
       }
-      navigate(redirectPath, { replace: true });
-    } catch (authError) {
+      const destination = resolveRedirect(authenticatedUser.role || role);
+      navigate(destination, { replace: true });    } catch (authError) {
       setError(authError.message);
     } finally {
       setIsSubmitting(false);
@@ -120,11 +118,11 @@ function Login({ defaultRole = "" }) {  const navigate = useNavigate();
           </button>
         </form>
         <div style={styles.helperText}>
-          <p>Use one of the demo accounts to sign in:</p>
+          <p>Use one of the seeded accounts to sign in:</p>
           <ul style={styles.credentialList}>
-            <li>Student — student@example.com / Student123!</li>
-            <li>Landlord — landlord@example.com / Landlord123!</li>
-            <li>Admin — admin@example.com / Admin123!</li>
+            <li>Student — student@cput.ac.za / Student1234</li>
+            <li>Landlord — sipho.mbeki@rentconnect.co.za / Landlord1234</li>
+            <li>Admin — admin@cput-housing.co.za / Admin1234</li>
           </ul>
         </div>
       </div>
