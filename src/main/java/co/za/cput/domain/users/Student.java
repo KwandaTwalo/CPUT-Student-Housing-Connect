@@ -60,51 +60,99 @@ public class Student {
         this.isStudentVerified = builder.isStudentVerified;
         this.fundingStatus = builder.fundingStatus;
         this.contact = builder.contact;
-        this.bookings = builder.bookings;
+        this.bookings = builder.bookings != null ? builder.bookings : new ArrayList<>();
     }
 
     public Long getStudentID() {
         return studentID;
     }
 
+    public void setStudentID(Long studentID) {
+        this.studentID = studentID;
+    }
+
     public String getStudentName() {
         return studentName;
+    }
+
+    public void setStudentName(String studentName) {
+        this.studentName = studentName;
     }
 
     public String getStudentSurname() {
         return studentSurname;
     }
 
+    public void setStudentSurname(String studentSurname) {
+        this.studentSurname = studentSurname;
+    }
+
     public LocalDate getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     public String getGender() {
         return gender;
     }
 
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public LocalDateTime getRegistrationDate() {
         return registrationDate;
     }
 
+    public void setRegistrationDate(LocalDateTime registrationDate) {
+        this.registrationDate = registrationDate;
+    }
+
     public boolean getIsStudentVerified() {
         return isStudentVerified;
+    }
+
+    public boolean isStudentVerified() {
+        return isStudentVerified;
+    }
+
+    public void setStudentVerified(boolean studentVerified) {
+        isStudentVerified = studentVerified;
     }
 
     public FundingStatus getFundingStatus() {
         return fundingStatus;
     }
 
+    public void setFundingStatus(FundingStatus fundingStatus) {
+        this.fundingStatus = fundingStatus;
+    }
+
     public Contact getContact() {
         return contact;
     }
 
+    public void setContact(Contact contact) {
+        this.contact = contact;
+    }
+
     public List<Booking> getBookings() {
         return bookings;
+    }
+
+    public void setBookings(List<Booking> bookings) {
+        this.bookings = bookings != null ? bookings : new ArrayList<>();
     }
 
     @Override
@@ -273,7 +321,5 @@ public class Student {
         }
         }
         }
-        }
         ]
         }*/
-

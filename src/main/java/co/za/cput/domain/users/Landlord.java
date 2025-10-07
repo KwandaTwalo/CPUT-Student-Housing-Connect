@@ -46,39 +46,75 @@ public class Landlord {
         this.dateRegistered = builder.dateRegistered;
         this.password = builder.password;
         this.contact = builder.contact;
-        this.accommodationList = builder.accommodationList;
+        this.accommodationList = builder.accommodationList != null ? builder.accommodationList : new ArrayList<>();
     }
 
     public Long getLandlordID() {
         return landlordID;
     }
 
+    public void setLandlordID(Long landlordID) {
+        this.landlordID = landlordID;
+    }
+
     public String getLandlordFirstName() {
         return landlordFirstName;
+    }
+
+    public void setLandlordFirstName(String landlordFirstName) {
+        this.landlordFirstName = landlordFirstName;
     }
 
     public String getLandlordLastName() {
         return landlordLastName;
     }
 
+    public void setLandlordLastName(String landlordLastName) {
+        this.landlordLastName = landlordLastName;
+    }
+
     public boolean isVerified() {
         return isVerified;
+    }
+
+    public boolean getIsVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean verified) {
+        isVerified = verified;
     }
 
     public LocalDate getDateRegistered() {
         return dateRegistered;
     }
 
+    public void setDateRegistered(LocalDate dateRegistered) {
+        this.dateRegistered = dateRegistered;
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Contact getContact() {
         return contact;
     }
 
+    public void setContact(Contact contact) {
+        this.contact = contact;
+    }
+
     public List<Accommodation> getAccommodationList() {
         return accommodationList;
+    }
+
+    public void setAccommodationList(List<Accommodation> accommodationList) {
+        this.accommodationList = accommodationList != null ? accommodationList : new ArrayList<>();
     }
 
     @Override
@@ -194,84 +230,3 @@ public class Landlord {
         "roomType": "SINGLE",
         "bathroomType": "PRIVATE",
         "accommodationStatus": "AVAILABLE",
-        "address": {
-        "streetNumber": "12A",
-        "streetName": "Victoria Road",
-        "suburb": "Mowbray",
-        "city": "Cape Town",
-        "postalCode": 7700
-        }
-        },
-        {
-        "rent": 2800.0,
-        "wifiAvailable": false,
-        "furnished": false,
-        "distanceFromCampus": 2.3,
-        "utilitiesIncluded": false,
-        "roomType": "SHARED",
-        "bathroomType": "SHARED",
-        "accommodationStatus": "AVAILABLE",
-        "address": {
-        "streetNumber": "45",
-        "streetName": "Church Street",
-        "suburb": "Observatory",
-        "city": "Cape Town",
-        "postalCode": 7925
-        }
-        }
-        ]
-        }
-*/
-
-/*{
-        "landlordFirstName": "Nomsa",
-        "landlordLastName": "Dlamini",
-        "isVerified": false,
-        "dateRegistered": "2025-08-07",
-        "password": "SafeP@ss987!",
-        "contact": {
-        "email": "nomsa.dlamini@housingmail.com",
-        "phoneNumber": "0738881122",
-        "alternatePhoneNumber": "0812345678",
-        "isEmailVerified": false,
-        "isPhoneVerified": true,
-        "preferredContactMethod": "PHONE"
-        },
-        "accommodationList": [
-        {
-        "rent": 4200.0,
-        "wifiAvailable": true,
-        "furnished": true,
-        "distanceFromCampus": 0.8,
-        "utilitiesIncluded": true,
-        "roomType": "SINGLE",
-        "bathroomType": "PRIVATE",
-        "accommodationStatus": "AVAILABLE",
-        "address": {
-        "streetNumber": "18B",
-        "streetName": "Main Road",
-        "suburb": "Rondebosch",
-        "city": "Cape Town",
-        "postalCode": 7701
-        }
-        },
-        {
-        "rent": 3100.0,
-        "wifiAvailable": false,
-        "furnished": true,
-        "distanceFromCampus": 2.0,
-        "utilitiesIncluded": false,
-        "roomType": "SHARED",
-        "bathroomType": "SHARED",
-        "accommodationStatus": "AVAILABLE",
-        "address": {
-        "streetNumber": "102",
-        "streetName": "Durban Road",
-        "suburb": "Bellville",
-        "city": "Cape Town",
-        "postalCode": 7530
-        }
-        }
-        ]
-        }*/
-

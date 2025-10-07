@@ -45,7 +45,7 @@ public class Administrator {
         this.adminPassword = builder.adminPassword;
         this.adminRoleStatus = builder.adminRoleStatus;
         this.contact = builder.contact;
-        this.verifications = builder.verifications;
+        this.verifications = builder.verifications != null ? builder.verifications : new ArrayList<>();
     }
 
 
@@ -53,28 +53,56 @@ public class Administrator {
         return adminID;
     }
 
+    public void setAdminID(Long adminID) {
+        this.adminID = adminID;
+    }
+
     public String getAdminName() {
         return adminName;
+    }
+
+    public void setAdminName(String adminName) {
+        this.adminName = adminName;
     }
 
     public String getAdminSurname() {
         return adminSurname;
     }
 
+    public void setAdminSurname(String adminSurname) {
+        this.adminSurname = adminSurname;
+    }
+
     public String getAdminPassword() {
         return adminPassword;
+    }
+
+    public void setAdminPassword(String adminPassword) {
+        this.adminPassword = adminPassword;
     }
 
     public AdminRoleStatus getAdminRoleStatus() {
         return adminRoleStatus;
     }
 
+    public void setAdminRoleStatus(AdminRoleStatus adminRoleStatus) {
+        this.adminRoleStatus = adminRoleStatus;
+    }
+
     public Contact getContact() {
         return contact;
     }
 
+    public void setContact(Contact contact) {
+        this.contact = contact;
+    }
+
     public List<Verification> getVerifications() {
         return verifications;
+    }
+
+    public void setVerifications(List<Verification> verifications) {
+        this.verifications = verifications != null ? verifications : new ArrayList<>();
     }
 
     @Override
@@ -194,11 +222,3 @@ public class Administrator {
         "alternatePhoneNumber": "0743219876",
         "isEmailVerified": true,
         "isPhoneVerified": false,
-        "preferredContactMethod": "PHONE"
-        }
-        }
-        }
-        }
-        ]
-        }*/
-
