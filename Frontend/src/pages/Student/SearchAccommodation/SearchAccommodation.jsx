@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { searchAccommodations } from "../../../services/accommodationService";
 
 const initialFilters = {
@@ -47,6 +49,59 @@ const searchOptions = [
     "Double room",
 ];
 
+const CAPE_TOWN_COORDINATES = [-33.9249, 18.4241];
+const coordinateCache = new Map();
+
+const buildListingKey = (listing) =>
+    [listing.streetAddress, listing.suburb, listing.city, listing.postalCode, listing.id].filter(Boolean).join("|");
+
+const extractLatLng = (listing) => {
+    const explicitLat =
+        listing.latitude ??
+        listing.lat ??
+        listing.location?.latitude ??
+        listing.coordinates?.latitude ??
+        listing.geoLocation?.latitude ??
+        listing.geoLocation?.lat ??
+        listing.latitudeCoordinate;
+    const explicitLng =
+        listing.longitude ??
+        listing.lng ??
+        listing.location?.longitude ??
+        listing.coordinates?.longitude ??
+        listing.geoLocation?.longitude ??
+        listing.geoLocation?.lng ??
+        listing.longitudeCoordinate;
+
+    if (typeof explicitLat === "number" && typeof explicitLng === "number") {
+        return [explicitLat, explicitLng];
+    }
+
+    return null;
+};
+
+const generateCoordinatesFromAddress = (listing) => {
+    const cacheKey = buildListingKey(listing);
+    if (coordinateCache.has(cacheKey)) {
+        return coordinateCache.get(cacheKey);
+    }
+
+    const seedString = cacheKey || "cape-town-default";
+    let hash = 0;
+    for (let index = 0; index < seedString.length; index += 1) {
+        hash = (hash << 5) - hash + seedString.charCodeAt(index);
+        hash |= 0;
+    }
+
+    const latOffset = ((hash % 1000) / 1000 - 0.5) * 0.12;
+    const lngOffset = ((((hash >> 4) % 1000) / 1000) - 0.5) * 0.12;
+    const coordinates = [CAPE_TOWN_COORDINATES[0] + latOffset, CAPE_TOWN_COORDINATES[1] + lngOffset];
+    coordinateCache.set(cacheKey, coordinates);
+    return coordinates;
+};
+
+const resolveListingCoordinates = (listing) => extractLatLng(listing) ?? generateCoordinatesFromAddress(listing);
+
 function SearchAccommodation() {
     const navigate = useNavigate();
     const [filters, setFilters] = useState(initialFilters);
@@ -56,6 +111,12 @@ function SearchAccommodation() {
     const [suggestions, setSuggestions] = useState([]);
     const [sortOrder, setSortOrder] = useState("RECOMMENDED");
     const [viewMode, setViewMode] = useState("grid");
+    const [selectedListingId, setSelectedListingId] = useState(null);
+
+    const mapContainerRef = useRef(null);
+    const mapInstanceRef = useRef(null);
+    const markerLayerRef = useRef(null);
+    const resultKeyRef = useRef("");
 
     const normaliseBoolean = useCallback((value) => {
         if (value === "true") return true;
@@ -104,6 +165,105 @@ function SearchAccommodation() {
         loadResults();
     }, [loadResults]);
 
+    useEffect(() => {
+        if (!mapContainerRef.current || mapInstanceRef.current) {
+            return;
+        }
+
+        mapInstanceRef.current = L.map(mapContainerRef.current, {
+            center: CAPE_TOWN_COORDINATES,
+            zoom: 12,
+            zoomControl: false,
+        });
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap contributors",
+            maxZoom: 19,
+        }).addTo(mapInstanceRef.current);
+
+        L.control.zoom({ position: "bottomright" }).addTo(mapInstanceRef.current);
+        markerLayerRef.current = L.layerGroup().addTo(mapInstanceRef.current);
+    }, []);
+
+    const handleSelectListing = useCallback((listing) => {
+        setSelectedListingId(listing.id);
+        const map = mapInstanceRef.current;
+        if (map) {
+            const coordinates = resolveListingCoordinates(listing);
+            map.flyTo(coordinates, Math.max(map.getZoom(), 14), { duration: 0.6 });
+        }
+    }, []);
+
+    useEffect(() => {
+        const map = mapInstanceRef.current;
+        const markerLayer = markerLayerRef.current;
+        if (!map || !markerLayer) {
+            return;
+        }
+
+        markerLayer.clearLayers();
+
+        if (results.length === 0) {
+            map.setView(CAPE_TOWN_COORDINATES, 11);
+            resultKeyRef.current = "";
+            return;
+        }
+
+        const listingIds = results.map((listing) => listing.id).join("|");
+        const bounds = [];
+
+        results.forEach((listing) => {
+            const coordinates = resolveListingCoordinates(listing);
+            const isSelected = listing.id === selectedListingId;
+            const marker = L.circleMarker(coordinates, {
+                radius: isSelected ? 12 : 8,
+                color: isSelected ? "#1d4ed8" : "#38bdf8",
+                weight: isSelected ? 3 : 2,
+                opacity: 0.9,
+                fillOpacity: isSelected ? 0.85 : 0.6,
+                fillColor: isSelected ? "#1d4ed8" : "#38bdf8",
+            });
+
+            marker.on("click", () => handleSelectListing(listing));
+            marker.bindPopup(
+                `<strong>${listing.streetAddress || "Listing"}</strong><br />${
+                    listing.suburb ? `${listing.suburb}, ` : ""
+                }${listing.city || "Cape Town"}`
+            );
+            markerLayer.addLayer(marker);
+            bounds.push(L.latLng(coordinates[0], coordinates[1]));
+        });
+
+        if (!selectedListingId && results[0]) {
+            setSelectedListingId(results[0].id);
+        }
+
+        if (listingIds !== resultKeyRef.current) {
+            if (bounds.length === 1) {
+                map.flyTo(bounds[0], 14, { duration: 0.6 });
+            } else if (bounds.length > 1) {
+                map.fitBounds(L.latLngBounds(bounds), { padding: [48, 48], maxZoom: 14 });
+            }
+            resultKeyRef.current = listingIds;
+        }
+    }, [results, selectedListingId, handleSelectListing]);
+
+    useEffect(() => {
+        if (results.length === 0) {
+            setSelectedListingId(null);
+            return;
+        }
+
+        if (!selectedListingId || !results.some((item) => item.id === selectedListingId)) {
+            setSelectedListingId(results[0].id);
+        }
+    }, [results, selectedListingId]);
+
+    const selectedListing = useMemo(
+        () => results.find((listing) => listing.id === selectedListingId) || null,
+        [results, selectedListingId]
+    );
+
     const handleQueryChange = (value) => {
         setFilters((prev) => ({ ...prev, query: value }));
         if (!value) {
@@ -111,9 +271,7 @@ function SearchAccommodation() {
             return;
         }
         const lowerValue = value.toLowerCase();
-        const matches = searchOptions
-            .filter((option) => option.toLowerCase().includes(lowerValue))
-            .slice(0, 6);
+        const matches = searchOptions.filter((option) => option.toLowerCase().includes(lowerValue)).slice(0, 6);
         setSuggestions(matches);
     };
 
@@ -193,19 +351,6 @@ function SearchAccommodation() {
         };
     }, [sortedResults]);
 
-    const firstListing = sortedResults[0];
-    const mapAddress = firstListing
-        ? [
-            firstListing.streetAddress,
-            firstListing.suburb,
-            firstListing.city,
-            firstListing.postalCode,
-        ]
-            .filter(Boolean)
-            .join(" ")
-        : "Cape Town, South Africa";
-    const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapAddress)}&output=embed`;
-
     return (
         <div style={styles.page}>
             <section style={styles.hero}>
@@ -213,8 +358,8 @@ function SearchAccommodation() {
                     <span style={styles.heroBadge}>Discover • Match • Move</span>
                     <h1 style={styles.title}>Your personalised CPUT housing hub</h1>
                     <p style={styles.subtitle}>
-                        Curated accommodation listings with rich amenities, live analytics and immersive map previews. Save time and move in
-                        with confidence.
+                        Curated accommodation listings with rich amenities, live analytics and an interactive Cape Town map.
+                        Save time and move in with confidence.
                     </p>
                     <div style={styles.heroMetrics}>
                         <div style={styles.heroMetricCard}>
@@ -233,7 +378,7 @@ function SearchAccommodation() {
                 </div>
             </section>
 
-            <div style={styles.layout}>
+            <div style={styles.contentWrapper}>
                 <form style={styles.filterPanel} onSubmit={handleSearch}>
                     <div style={styles.panelHeader}>
                         <h2>Smart filters</h2>
@@ -248,8 +393,9 @@ function SearchAccommodation() {
                                 name="query"
                                 value={filters.query}
                                 onChange={handleInputChange}
-                                placeholder={"Try \"Observatory studio\" or \"Bellville\""}
+                                placeholder={'Try "Observatory studio" or "Bellville"'}
                                 autoComplete="off"
+                                style={styles.inputControl}
                             />
                             {suggestions.length > 0 && (
                                 <ul style={styles.suggestionList}>
@@ -276,6 +422,7 @@ function SearchAccommodation() {
                                 value={filters.minRent}
                                 onChange={handleInputChange}
                                 placeholder="e.g. 2500"
+                                style={styles.inputControl}
                             />
                         </div>
                         <div style={styles.field}>
@@ -286,6 +433,7 @@ function SearchAccommodation() {
                                 value={filters.maxRent}
                                 onChange={handleInputChange}
                                 placeholder="e.g. 4500"
+                                style={styles.inputControl}
                             />
                         </div>
                         <div style={styles.field}>
@@ -298,6 +446,7 @@ function SearchAccommodation() {
                                 placeholder="e.g. 3"
                                 step="0.1"
                                 min="0"
+                                style={styles.inputControl}
                             />
                         </div>
                         <div style={styles.field}>
@@ -308,6 +457,7 @@ function SearchAccommodation() {
                                 value={filters.city}
                                 onChange={handleInputChange}
                                 placeholder="Cape Town"
+                                style={styles.inputControl}
                             />
                         </div>
                         <div style={styles.field}>
@@ -318,11 +468,17 @@ function SearchAccommodation() {
                                 value={filters.suburb}
                                 onChange={handleInputChange}
                                 placeholder="Belhar"
+                                style={styles.inputControl}
                             />
                         </div>
                         <div style={styles.field}>
                             <label>Room type</label>
-                            <select name="roomType" value={filters.roomType} onChange={handleInputChange}>
+                            <select
+                                name="roomType"
+                                value={filters.roomType}
+                                onChange={handleInputChange}
+                                style={styles.inputControl}
+                            >
                                 <option value="">Any</option>
                                 <option value="SINGLE">Single</option>
                                 <option value="DOUBLE">Double</option>
@@ -332,7 +488,12 @@ function SearchAccommodation() {
                         </div>
                         <div style={styles.field}>
                             <label>Bathroom</label>
-                            <select name="bathroomType" value={filters.bathroomType} onChange={handleInputChange}>
+                            <select
+                                name="bathroomType"
+                                value={filters.bathroomType}
+                                onChange={handleInputChange}
+                                style={styles.inputControl}
+                            >
                                 <option value="">Any</option>
                                 <option value="PRIVATE">Private</option>
                                 <option value="SHARED">Shared</option>
@@ -340,7 +501,12 @@ function SearchAccommodation() {
                         </div>
                         <div style={styles.field}>
                             <label>Wi-Fi included</label>
-                            <select name="wifiAvailable" value={filters.wifiAvailable} onChange={handleInputChange}>
+                            <select
+                                name="wifiAvailable"
+                                value={filters.wifiAvailable}
+                                onChange={handleInputChange}
+                                style={styles.inputControl}
+                            >
                                 {booleanOptions.map((option) => (
                                     <option key={option.value} value={option.value}>
                                         {option.label}
@@ -350,7 +516,12 @@ function SearchAccommodation() {
                         </div>
                         <div style={styles.field}>
                             <label>Furnished</label>
-                            <select name="furnished" value={filters.furnished} onChange={handleInputChange}>
+                            <select
+                                name="furnished"
+                                value={filters.furnished}
+                                onChange={handleInputChange}
+                                style={styles.inputControl}
+                            >
                                 {booleanOptions.map((option) => (
                                     <option key={option.value} value={option.value}>
                                         {option.label}
@@ -360,7 +531,12 @@ function SearchAccommodation() {
                         </div>
                         <div style={styles.field}>
                             <label>Utilities included</label>
-                            <select name="utilitiesIncluded" value={filters.utilitiesIncluded} onChange={handleInputChange}>
+                            <select
+                                name="utilitiesIncluded"
+                                value={filters.utilitiesIncluded}
+                                onChange={handleInputChange}
+                                style={styles.inputControl}
+                            >
                                 {booleanOptions.map((option) => (
                                     <option key={option.value} value={option.value}>
                                         {option.label}
@@ -383,145 +559,173 @@ function SearchAccommodation() {
                         <div style={styles.chipRow}>
                             {filterChips.map((chip) => (
                                 <span key={chip} style={styles.chip}>
-                  {chip}
-                </span>
+                                    {chip}
+                                </span>
                             ))}
                         </div>
                     )}
                 </form>
 
-                <section style={styles.resultsPanel}>
-                    <header style={styles.resultsHeader}>
-                        <div>
-                            <h2>Results</h2>
-                            <p>{sortedResults.length} curated listings that match your preferences.</p>
-                        </div>
-                        <div style={styles.toolbar}>
-                            <div style={styles.sortControl}>
-                                <label>Sort by</label>
-                                <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value)}>
-                                    {sortOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
+                <section style={styles.resultsAndMap}>
+                    <div style={styles.resultsPanel}>
+                        <header style={styles.resultsHeader}>
+                            <div>
+                                <h2>Results</h2>
+                                <p>{sortedResults.length} curated listings that match your preferences.</p>
                             </div>
-                            <div style={styles.viewModeToggle}>
-                                {viewModes.map((mode) => (
-                                    <button
-                                        key={mode.value}
-                                        type="button"
-                                        onClick={() => setViewMode(mode.value)}
-                                        style={{
-                                            ...styles.viewModeButton,
-                                            ...(viewMode === mode.value ? styles.viewModeButtonActive : {}),
-                                        }}
+                            <div style={styles.toolbar}>
+                                <div style={styles.sortControl}>
+                                    <label>Sort by</label>
+                                    <select
+                                        value={sortOrder}
+                                        onChange={(event) => setSortOrder(event.target.value)}
+                                        style={{ ...styles.inputControl, minWidth: "160px" }}
                                     >
-                                        {mode.label}
-                                    </button>
-                                ))}
+                                        {sortOptions.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div style={styles.viewModeToggle}>
+                                    {viewModes.map((mode) => (
+                                        <button
+                                            key={mode.value}
+                                            type="button"
+                                            onClick={() => setViewMode(mode.value)}
+                                            style={{
+                                                ...styles.viewModeButton,
+                                                ...(viewMode === mode.value ? styles.viewModeButtonActive : {}),
+                                            }}
+                                        >
+                                            {mode.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    </header>
+                        </header>
 
-                    {analytics && (
-                        <div style={styles.analyticsStrip}>
-                            <div>
-                                <strong>R{analytics.averageRent}</strong>
-                                <span>Average rent</span>
+                        {analytics && (
+                            <div style={styles.analyticsStrip}>
+                                <div>
+                                    <strong>R{analytics.averageRent}</strong>
+                                    <span>Average rent</span>
+                                </div>
+                                <div>
+                                    <strong>{analytics.wifiPercentage}%</strong>
+                                    <span>Listings with Wi-Fi</span>
+                                </div>
+                                <div>
+                                    <strong>{analytics.furnishedPercentage}%</strong>
+                                    <span>Furnished spaces</span>
+                                </div>
                             </div>
-                            <div>
-                                <strong>{analytics.wifiPercentage}%</strong>
-                                <span>Listings with Wi-Fi</span>
-                            </div>
-                            <div>
-                                <strong>{analytics.furnishedPercentage}%</strong>
-                                <span>Furnished spaces</span>
-                            </div>
-                        </div>
-                    )}
+                        )}
 
-                    <div style={styles.mapPreview}>
-                        <iframe
-                            title="map-preview"
-                            src={mapUrl}
-                            style={styles.mapIframe}
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                        />
-                        <div style={styles.mapLegend}>
-                            <h3>Live neighbourhood preview</h3>
-                            <p>
-                                We centre the map on your top recommendation. Zoom around to explore commuting routes, coffee spots and study
-                                hubs nearby.
-                            </p>
-                            {firstListing && (
+                        {error && <div style={styles.error}>{error}</div>}
+                        {!error && loading && <div style={styles.loading}>Loading available accommodation...</div>}
+                        {!loading && !error && sortedResults.length === 0 && (
+                            <div style={styles.emptyState}>
+                                <h3>No accommodation found</h3>
+                                <p>Adjust your filters and try again. New listings are added regularly.</p>
+                            </div>
+                        )}
+
+                        <div
+                            style={{
+                                ...(viewMode === "grid" ? styles.grid : styles.list),
+                            }}
+                        >
+                            {sortedResults.map((item) => {
+                                const baseCardStyles = viewMode === "grid" ? styles.card : styles.cardList;
+                                const isSelected = item.id === selectedListingId;
+                                return (
+                                    <article
+                                        key={item.id}
+                                        style={{
+                                            ...baseCardStyles,
+                                            ...(isSelected ? styles.cardSelected : {}),
+                                        }}
+                                        onClick={() => handleSelectListing(item)}
+                                        onMouseEnter={() => handleSelectListing(item)}
+                                    >
+                                        <div style={styles.cardHeader}>
+                                            <span style={styles.statusBadge}>{item.status || item.accommodationStatus}</span>
+                                            <h2 style={styles.cardTitle}>R{item.rent?.toFixed(2)} / month</h2>
+                                            <p style={styles.cardSubtitle}>
+                                                {item.streetAddress || "Address on request"}
+                                                {item.suburb ? `, ${item.suburb}` : ""}
+                                                {item.city ? `, ${item.city}` : ""}
+                                            </p>
+                                        </div>
+                                        <div style={styles.tagRow}>
+                                            <span style={styles.tag}>{item.roomType?.replace("_", " ")}</span>
+                                            <span style={styles.tag}>{item.bathroomType} bathroom</span>
+                                            <span style={styles.tag}>{item.distanceFromCampus?.toFixed(1)} km from campus</span>
+                                        </div>
+                                        <ul style={styles.featureList}>
+                                            <li>Wi-Fi: {item.wifiAvailable || item.isWifiAvailable ? "Included" : "Not included"}</li>
+                                            <li>Furnished: {item.furnished || item.isFurnished ? "Yes" : "No"}</li>
+                                            <li>
+                                                Utilities: {item.utilitiesIncluded || item.isUtilitiesIncluded ? "Included" : "Excluded"}
+                                            </li>
+                                        </ul>
+                                        <div style={styles.landlordBlock}>
+                                            <div>
+                                                <p style={styles.landlordName}>
+                                                    Listed by {item.landlordName || item.landlord?.landlordFirstName}
+                                                </p>
+                                                {item.landlordEmail || item.landlord?.contact?.email ? (
+                                                    <p style={styles.landlordEmail}>
+                                                        {item.landlordEmail || item.landlord?.contact?.email}
+                                                    </p>
+                                                ) : null}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                style={styles.viewButton}
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    navigate(`/student/accommodation/${item.id}`);
+                                                }}
+                                            >
+                                                View details
+                                            </button>
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <aside style={styles.mapPanel}>
+                        <div ref={mapContainerRef} style={styles.mapContainer} />
+                        <div style={styles.mapOverlay}>
+                            <span style={styles.mapBadge}>Interactive Cape Town map</span>
+                            {selectedListing ? (
+                                <div style={styles.mapListingDetails}>
+                                    <strong>{selectedListing.streetAddress || "Selected listing"}</strong>
+                                    <span>
+                                        {[selectedListing.suburb, selectedListing.city].filter(Boolean).join(", ") ||
+                                            "Cape Town"}
+                                    </span>
+                                    <span>R{selectedListing.rent?.toFixed(2)} / month</span>
+                                </div>
+                            ) : (
+                                <p style={styles.mapPlaceholder}>Hover or tap on a listing to highlight it on the map.</p>
+                            )}
+                            {selectedListing && (
                                 <button
                                     type="button"
                                     style={styles.mapButton}
-                                    onClick={() => navigate(`/student/accommodation/${firstListing.id}`)}
+                                    onClick={() => navigate(`/student/accommodation/${selectedListing.id}`)}
                                 >
-                                    View spotlight listing →
+                                    Open listing
                                 </button>
                             )}
                         </div>
-                    </div>
-
-                    {error && <div style={styles.error}>{error}</div>}
-                    {!error && loading && <div style={styles.loading}>Loading available accommodation...</div>}
-                    {!loading && !error && sortedResults.length === 0 && (
-                        <div style={styles.emptyState}>
-                            <h3>No accommodation found</h3>
-                            <p>Adjust your filters and try again. New listings are added regularly.</p>
-                        </div>
-                    )}
-
-                    <div
-                        style={{
-                            ...(viewMode === "grid" ? styles.grid : styles.list),
-                        }}
-                    >
-                        {sortedResults.map((item) => (
-                            <article key={item.id} style={viewMode === "grid" ? styles.card : styles.cardList}>
-                                <div style={styles.cardHeader}>
-                                    <span style={styles.statusBadge}>{item.status || item.accommodationStatus}</span>
-                                    <h2 style={styles.cardTitle}>R{item.rent?.toFixed(2)} / month</h2>
-                                    <p style={styles.cardSubtitle}>
-                                        {item.streetAddress || "Address on request"}
-                                        {item.suburb ? `, ${item.suburb}` : ""}
-                                        {item.city ? `, ${item.city}` : ""}
-                                    </p>
-                                </div>
-                                <div style={styles.tagRow}>
-                                    <span style={styles.tag}>{item.roomType?.replace("_", " ")}</span>
-                                    <span style={styles.tag}>{item.bathroomType} bathroom</span>
-                                    <span style={styles.tag}>{item.distanceFromCampus?.toFixed(1)} km from campus</span>
-                                </div>
-                                <ul style={styles.featureList}>
-                                    <li>Wi-Fi: {item.wifiAvailable || item.isWifiAvailable ? "Included" : "Not included"}</li>
-                                    <li>Furnished: {item.furnished || item.isFurnished ? "Yes" : "No"}</li>
-                                    <li>Utilities: {item.utilitiesIncluded || item.isUtilitiesIncluded ? "Included" : "Excluded"}</li>
-                                </ul>
-                                <div style={styles.landlordBlock}>
-                                    <div>
-                                        <p style={styles.landlordName}>Listed by {item.landlordName || item.landlord?.landlordFirstName}</p>
-                                        {item.landlordEmail || item.landlord?.contact?.email ? (
-                                            <p style={styles.landlordEmail}>{item.landlordEmail || item.landlord?.contact?.email}</p>
-                                        ) : null}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        style={styles.viewButton}
-                                        onClick={() => navigate(`/student/accommodation/${item.id}`)}
-                                    >
-                                        View details
-                                    </button>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
+                    </aside>
                 </section>
             </div>
         </div>
@@ -529,85 +733,82 @@ function SearchAccommodation() {
 }
 
 const glassPanel = {
-    backgroundColor: "rgba(255, 255, 255, 0.82)",
+    background: "rgba(255, 255, 255, 0.9)",
     borderRadius: "24px",
-    border: "1px solid rgba(148, 163, 184, 0.2)",
-    boxShadow: "var(--shadow-floating)",
-    backdropFilter: "blur(18px)",
+    boxShadow: "0 28px 70px rgba(15, 23, 42, 0.15)",
+    backdropFilter: "blur(14px)",
 };
 
 const styles = {
     page: {
         minHeight: "100vh",
-        padding: "40px clamp(24px, 4vw, 64px) 80px",
-        background: "linear-gradient(180deg, rgba(241, 245, 249, 0.8) 0%, rgba(226, 232, 240, 0.9) 70%, rgba(248, 250, 252, 0.95) 100%)",
-        color: "#0f172a",
-        fontFamily: "'Inter', 'Segoe UI', sans-serif",
-    },
-    hero: {
-        margin: "0 auto 40px",
-        maxWidth: "1120px",
-    },
-    heroContent: {
-        ...glassPanel,
-        padding: "32px clamp(24px, 5vw, 48px)",
         display: "flex",
         flexDirection: "column",
-        gap: "16px",
+        gap: "32px",
+        paddingBottom: "48px",
+        background: "linear-gradient(180deg, #e0f2fe 0%, #f8fafc 60%, #ffffff 100%)",
+    },
+    hero: {
+        padding: "48px clamp(24px, 6vw, 80px) 0",
+    },
+    heroContent: {
+        maxWidth: "720px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "18px",
     },
     heroBadge: {
-        alignSelf: "flex-start",
-        padding: "6px 14px",
-        borderRadius: "999px",
-        background: "rgba(37, 99, 235, 0.12)",
-        color: "#1d4ed8",
-        fontSize: "13px",
-        letterSpacing: "0.1em",
         textTransform: "uppercase",
-        fontWeight: 600,
+        letterSpacing: "0.3em",
+        fontSize: "12px",
+        fontWeight: 700,
+        color: "#0f172a",
     },
     title: {
         margin: 0,
-        fontSize: "clamp(2rem, 4vw, 3rem)",
-        letterSpacing: "-0.01em",
+        fontSize: "clamp(2.2rem, 4vw, 3.2rem)",
+        fontWeight: 700,
+        color: "#0f172a",
     },
     subtitle: {
         margin: 0,
-        color: "#475569",
         fontSize: "1.05rem",
-        lineHeight: 1.7,
-        maxWidth: "720px",
+        lineHeight: 1.6,
+        color: "#475569",
+        maxWidth: "640px",
     },
     heroMetrics: {
         display: "flex",
-        gap: "16px",
+        gap: "18px",
         flexWrap: "wrap",
     },
     heroMetricCard: {
         ...glassPanel,
-        padding: "18px 22px",
-        minWidth: "200px",
+        padding: "16px 22px",
         display: "flex",
         flexDirection: "column",
         gap: "4px",
-        backgroundColor: "rgba(15, 23, 42, 0.05)",
+        color: "#0f172a",
     },
-    layout: {
-        display: "grid",
-        gridTemplateColumns: "minmax(0, 360px) minmax(0, 1fr)",
-        gap: "32px",
-        alignItems: "flex-start",
-        maxWidth: "1240px",
-        margin: "0 auto",
+    contentWrapper: {
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "28px",
+        alignItems: "stretch",
+        padding: "0 clamp(24px, 6vw, 80px)",
     },
     filterPanel: {
         ...glassPanel,
         padding: "28px",
         display: "flex",
         flexDirection: "column",
-        gap: "22px",
+        gap: "20px",
         position: "sticky",
         top: "24px",
+        maxHeight: "calc(100vh - 80px)",
+        overflowY: "auto",
+        flex: "0 1 340px",
+        minWidth: "280px",
     },
     panelHeader: {
         display: "flex",
@@ -617,42 +818,50 @@ const styles = {
     searchField: {
         display: "flex",
         flexDirection: "column",
-        gap: "8px",
-        position: "relative",
+        gap: "10px",
     },
     searchInputWrapper: {
         position: "relative",
     },
     suggestionList: {
         position: "absolute",
-        top: "calc(100% + 4px)",
-        left: 0,
-        right: 0,
-        backgroundColor: "#ffffff",
-        border: "1px solid #e2e8f0",
-        borderRadius: "18px",
+        inset: "100% 0 auto",
         margin: 0,
-        padding: 0,
+        padding: "8px 0",
         listStyle: "none",
-        boxShadow: "var(--shadow-floating)",
+        background: "#ffffff",
+        borderRadius: "12px",
+        boxShadow: "0 16px 40px rgba(15, 23, 42, 0.15)",
         zIndex: 10,
-        maxHeight: "240px",
-        overflowY: "auto",
     },
     suggestionItem: {
-        padding: "12px 16px",
+        padding: "10px 16px",
         cursor: "pointer",
+        fontSize: "14px",
+        color: "#1f2937",
     },
     filterGrid: {
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-        gap: "16px",
+        gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+        gap: "14px",
     },
     field: {
         display: "flex",
         flexDirection: "column",
         gap: "8px",
+        fontSize: "13px",
+        color: "#1f2937",
+    },
+    inputControl: {
+        width: "100%",
+        padding: "10px 12px",
+        borderRadius: "12px",
+        border: "1px solid rgba(148, 163, 184, 0.4)",
         fontSize: "14px",
+        background: "#ffffff",
+        outline: "none",
+        boxShadow: "inset 0 1px 0 rgba(148, 163, 184, 0.08)",
+        color: "#0f172a",
     },
     actions: {
         display: "flex",
@@ -660,23 +869,22 @@ const styles = {
         flexWrap: "wrap",
     },
     primaryButton: {
-        padding: "12px 22px",
-        borderRadius: "999px",
+        padding: "12px 18px",
+        borderRadius: "12px",
         border: "none",
-        background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+        background: "linear-gradient(135deg, #1d4ed8, #2563eb)",
         color: "#fff",
-        fontSize: "15px",
         fontWeight: 600,
         cursor: "pointer",
+        boxShadow: "0 18px 45px rgba(37, 99, 235, 0.35)",
     },
     secondaryButton: {
-        padding: "12px 22px",
-        borderRadius: "999px",
-        border: "1px solid rgba(148, 163, 184, 0.35)",
-        backgroundColor: "rgba(255, 255, 255, 0.8)",
-        color: "#1e293b",
-        fontSize: "15px",
-        fontWeight: 500,
+        padding: "12px 18px",
+        borderRadius: "12px",
+        border: "1px solid rgba(148, 163, 184, 0.4)",
+        background: "#fff",
+        color: "#1f2937",
+        fontWeight: 600,
         cursor: "pointer",
     },
     chipRow: {
@@ -690,6 +898,15 @@ const styles = {
         backgroundColor: "rgba(37, 99, 235, 0.12)",
         color: "#1d4ed8",
         fontSize: "13px",
+        fontWeight: 600,
+    },
+    resultsAndMap: {
+        display: "grid",
+        gridTemplateColumns: "minmax(0, 1.15fr) minmax(0, 0.85fr)",
+        gap: "24px",
+        alignItems: "stretch",
+        flex: "1 1 600px",
+        minWidth: "320px",
     },
     resultsPanel: {
         display: "flex",
@@ -745,37 +962,6 @@ const styles = {
         gap: "12px",
         alignItems: "stretch",
     },
-    mapPreview: {
-        ...glassPanel,
-        display: "grid",
-        gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)",
-        gap: "0",
-        overflow: "hidden",
-    },
-    mapIframe: {
-        width: "100%",
-        minHeight: "320px",
-        border: "none",
-    },
-    mapLegend: {
-        padding: "24px",
-        background: "rgba(15, 23, 42, 0.75)",
-        color: "#f8fafc",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-    },
-    mapButton: {
-        marginTop: "auto",
-        alignSelf: "flex-start",
-        padding: "10px 18px",
-        borderRadius: "999px",
-        border: "1px solid rgba(186, 230, 253, 0.6)",
-        backgroundColor: "rgba(37, 99, 235, 0.2)",
-        color: "#e0f2fe",
-        cursor: "pointer",
-        fontWeight: 600,
-    },
     grid: {
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
@@ -792,6 +978,8 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         gap: "16px",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+        cursor: "pointer",
     },
     cardList: {
         ...glassPanel,
@@ -800,6 +988,13 @@ const styles = {
         gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)",
         gap: "24px",
         alignItems: "center",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+        cursor: "pointer",
+    },
+    cardSelected: {
+        transform: "translateY(-6px)",
+        boxShadow: "0 32px 80px rgba(37, 99, 235, 0.24)",
+        border: "1px solid rgba(37, 99, 235, 0.25)",
     },
     cardHeader: {
         display: "flex",
@@ -886,6 +1081,58 @@ const styles = {
         ...glassPanel,
         padding: "48px",
         textAlign: "center",
+    },
+    mapPanel: {
+        position: "relative",
+        borderRadius: "28px",
+        overflow: "hidden",
+        boxShadow: "0 28px 80px rgba(15, 23, 42, 0.2)",
+    },
+    mapContainer: {
+        width: "100%",
+        height: "100%",
+        minHeight: "520px",
+    },
+    mapOverlay: {
+        position: "absolute",
+        bottom: "16px",
+        left: "16px",
+        right: "16px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "12px",
+        padding: "18px",
+        borderRadius: "20px",
+        background: "rgba(15, 23, 42, 0.78)",
+        color: "#f8fafc",
+        backdropFilter: "blur(8px)",
+    },
+    mapBadge: {
+        textTransform: "uppercase",
+        letterSpacing: "0.18em",
+        fontSize: "11px",
+        color: "rgba(186, 230, 253, 0.85)",
+    },
+    mapListingDetails: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "4px",
+        fontSize: "14px",
+    },
+    mapPlaceholder: {
+        margin: 0,
+        fontSize: "14px",
+        color: "rgba(226, 232, 240, 0.8)",
+    },
+    mapButton: {
+        alignSelf: "flex-start",
+        padding: "10px 18px",
+        borderRadius: "999px",
+        border: "1px solid rgba(186, 230, 253, 0.6)",
+        backgroundColor: "rgba(37, 99, 235, 0.25)",
+        color: "#e0f2fe",
+        fontWeight: 600,
+        cursor: "pointer",
     },
 };
 
