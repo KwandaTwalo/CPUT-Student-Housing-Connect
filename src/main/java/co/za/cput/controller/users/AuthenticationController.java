@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/HouseConnect/auth")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;

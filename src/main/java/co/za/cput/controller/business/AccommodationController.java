@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/Accommodation")
+@RequestMapping("/HouseConnect/Accommodation")
 public class AccommodationController {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AccommodationController.class);
 
     private final AccommodationServiceImpl accommodationService;
 
@@ -21,12 +23,14 @@ public class AccommodationController {
 
     @PostMapping("/create")
     public ResponseEntity<Accommodation> create(@RequestBody Accommodation accommodation) {
+        log.debug("Received create request: {}", accommodation);
         Accommodation created = accommodationService.create(accommodation);
+        log.debug("Created accommodation response: {}", created);
         return ResponseEntity.ok(created);
     }
 
-    @GetMapping({"/getAllAccommodations", "/getAllAccommodation"})
-    public ResponseEntity<Accommodation> read(@PathVariable Long accommodationID) {
+    @GetMapping("/read/{accommodationID}")
+    public ResponseEntity<Accommodation> read(@PathVariable("accommodationID") Long accommodationID) {
         Accommodation readAccommodation = accommodationService.read(accommodationID);
         if (readAccommodation == null) {
             return ResponseEntity.notFound().build();
