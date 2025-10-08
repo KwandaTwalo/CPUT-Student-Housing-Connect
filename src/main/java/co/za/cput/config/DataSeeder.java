@@ -15,6 +15,7 @@ import co.za.cput.repository.users.AdministratorRepository;
 import co.za.cput.repository.users.LandLordRepository;
 import co.za.cput.repository.users.StudentRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
+@Profile("!test")
 public class DataSeeder implements CommandLineRunner {
 
     private final AdministratorRepository administratorRepository;
