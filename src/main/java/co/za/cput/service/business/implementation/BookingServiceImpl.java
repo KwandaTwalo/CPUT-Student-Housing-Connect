@@ -37,7 +37,7 @@ public class BookingServiceImpl implements IBookingService {
         preparedBooking = LinkingEntitiesHelper.setBookingInReview(preparedBooking);
 
         // Save booking
-        return bookingRepository.save(preparedBooking);
+        return bookingRepository.saveAndFlush(preparedBooking);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class BookingServiceImpl implements IBookingService {
         preparedBooking = LinkingEntitiesHelper.setBookingInReview(preparedBooking);
 
         // Save updated booking
-        return bookingRepository.save(preparedBooking);
+        return bookingRepository.saveAndFlush(preparedBooking);
     }
 
     @Override

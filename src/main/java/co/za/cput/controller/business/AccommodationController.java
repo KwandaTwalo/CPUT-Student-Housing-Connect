@@ -25,7 +25,7 @@ public class AccommodationController {
         return ResponseEntity.ok(created);
     }
 
-    @GetMapping("/read/{accommodationID}")
+    @GetMapping({"/getAllAccommodations", "/getAllAccommodation"})
     public ResponseEntity<Accommodation> read(@PathVariable Long accommodationID) {
         Accommodation readAccommodation = accommodationService.read(accommodationID);
         if (readAccommodation == null) {
@@ -46,7 +46,7 @@ public class AccommodationController {
         return ResponseEntity.ok(updated);
     }
 
-    @GetMapping("/getAllAccommodations")
+    @GetMapping({"/getAllAccommodations", "/getAllAccommodation"})
     public ResponseEntity<List<Accommodation>> getAllAccommodations() {
         List<Accommodation> all = accommodationService.getAllAccommodations();
         if (all == null || all.isEmpty()) {

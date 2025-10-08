@@ -38,7 +38,7 @@ public class LandLordServiceImpl implements ILandLordService {
                 .setAccommodationList(null)
                 .build();
 
-        savedLandlord = landLordRepository.save(savedLandlord);
+        savedLandlord = landLordRepository.saveAndFlush(savedLandlord);
 
         // Step 2: Link accommodations to savedLandlord
         List<Accommodation> linkedAccommodations = new ArrayList<>();
@@ -48,7 +48,7 @@ public class LandLordServiceImpl implements ILandLordService {
                         .copy(accommodation)
                         .setLandlord(savedLandlord)
                         .build();
-                linkedAccommodations.add(accommodationRepository.save(linkedAccommodation)); // Save directly
+                linkedAccommodations.add(accommodationRepository.saveAndFlush(linkedAccommodation)); // Save directly
             }
         }
 
@@ -96,7 +96,7 @@ public class LandLordServiceImpl implements ILandLordService {
                 .build();
 
         // Step 4: Save updated landlord
-        return landLordRepository.save(updated);
+        return landLordRepository.saveAndFlush(updated);
     }
 
     @Override

@@ -53,7 +53,7 @@ public class AdministratorServiceImpl implements IAdministratorService {
                 .setVerifications(null)
                 .build();
 
-        Administrator savedAdmin = administratorRepository.save(adminWithoutVerifications);
+        Administrator savedAdmin = administratorRepository.saveAndFlush(adminWithoutVerifications);
 
         // Step 2: Now set back-reference and save verifications
         List<Verification> preparedVerifications = preparedAdmin.getVerifications();
@@ -74,7 +74,7 @@ public class AdministratorServiceImpl implements IAdministratorService {
                 .setVerifications(verificationsWithAdmin)
                 .build();
 
-        return administratorRepository.save(savedAdmin);
+        return administratorRepository.saveAndFlush(savedAdmin);
     }
 
 
@@ -85,7 +85,7 @@ public class AdministratorServiceImpl implements IAdministratorService {
 
     @Override
     public Administrator update(Administrator administrator) {
-        return administratorRepository.save(administrator);
+        return administratorRepository.saveAndFlush(administrator);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class AdministratorServiceImpl implements IAdministratorService {
                 .setVerified(approved)
                 .build();
 
-        return landLordRepository.save(updatedLandlord);
+        return landLordRepository.saveAndFlush(updatedLandlord);
     }
 
     @Override
@@ -157,7 +157,7 @@ public class AdministratorServiceImpl implements IAdministratorService {
         }
 
         Verification updatedVerification = builder.build();
-        return verificationRepository.save(updatedVerification);
+        return verificationRepository.saveAndFlush(updatedVerification);
     }
 
     @Override

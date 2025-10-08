@@ -35,7 +35,7 @@ public class AccommodationServiceImpl implements IAccommodationService {
     @Override
     public Accommodation create(Accommodation accommodation) {
         Accommodation linkedAccommodation = LinkingEntitiesHelper.linkLandlord(accommodation, landLordRepository);
-        return accommodationRepository.save(linkedAccommodation);
+        return accommodationRepository.saveAndFlush(linkedAccommodation);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class AccommodationServiceImpl implements IAccommodationService {
         }
 
         Accommodation linkedAccommodation = LinkingEntitiesHelper.linkLandlord(accommodation, landLordRepository);
-        return accommodationRepository.save(linkedAccommodation);
+        return accommodationRepository.saveAndFlush(linkedAccommodation);
     }
 
     @Override

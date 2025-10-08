@@ -26,7 +26,7 @@ public class StudentServiceImpl implements IStudentService {
                 .setBookings(null)
                 .build();
 
-        Student savedStudent = studentRepository.save(studentWithoutBookings); // Now has ID
+        Student savedStudent = studentRepository.saveAndFlush(studentWithoutBookings); // Now has ID
 
         // Step 2: Attach bookings with the now-persisted student
         Student studentWithLinkedBookings = LinkingEntitiesHelper.setStudentInBookings(
@@ -34,7 +34,7 @@ public class StudentServiceImpl implements IStudentService {
         );
 
         // Step 3: Save again with linked bookings
-        return studentRepository.save(studentWithLinkedBookings);
+        return studentRepository.saveAndFlush(studentWithLinkedBookings);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class StudentServiceImpl implements IStudentService {
 
         // Link bookings properly
         Student studentWithLinkedBookings = LinkingEntitiesHelper.setStudentInBookings(student);
-        return studentRepository.save(studentWithLinkedBookings);
+        return studentRepository.saveAndFlush(studentWithLinkedBookings);
     }
 
     @Override
