@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const initialProfile = {
     firstName: "John",
@@ -6,10 +6,21 @@ const initialProfile = {
     email: "john.doe@example.com",
     phone: "(+27) 71 234 5678",
     bio: "Dedicated landlord providing comfortable student housing near campus.",
+    profilePicture: "/profile-pic.jpg",
 };
 
 export default function EditProfile() {
     const [profile, setProfile] = useState(initialProfile);
+    const [previewImage, setPreviewImage] = useState(initialProfile.profilePicture);
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    useEffect(() => {
+        return () => {
+            if (previewImage && previewImage !== initialProfile.profilePicture) {
+                URL.revokeObjectURL(previewImage);
+            }
+        };
+    }, [previewImage]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -19,10 +30,28 @@ export default function EditProfile() {
         }));
     };
 
+    const handleImageChange = (event) => {
+        const file = event.target.files?.[0];
+        setSelectedFile(file || null);
+        if (previewImage && previewImage !== initialProfile.profilePicture) {
+            URL.revokeObjectURL(previewImage);
+        }
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setPreviewImage(url);
+        } else {
+            setPreviewImage(initialProfile.profilePicture);
+        }
+    };
+
     const handleSubmit = (event) => {
         event.preventDefault();
-        // TODO: Hook this up to the backend update profile endpoint when available
-        alert("Profile changes saved (demo state).");
+        const updatedFields = [
+            `First name: ${profile.firstName}`,
+            `Last name: ${profile.lastName}`,
+            selectedFile ? `Profile image: ${selectedFile.name}` : "Profile image unchanged",
+        ].join("\n");
+        alert(`Profile changes saved (demo state).\n${updatedFields}`);
     };
 
     return (
@@ -34,6 +63,16 @@ export default function EditProfile() {
                 </header>
 
                 <form onSubmit={handleSubmit} className="edit-profile-form">
+                    <div className="image-field">
+                        <span>Profile picture</span>
+                        <div className="image-preview">
+                            <img src={previewImage} alt="Selected profile" />
+                        </div>
+                        <label className="upload-button">
+                            Choose image
+                            <input type="file" accept="image/*" onChange={handleImageChange} />
+                        </label>
+                    </div>
                     <label className="form-field">
                         <span>First name</span>
                         <input
@@ -128,6 +167,47 @@ export default function EditProfile() {
         .edit-profile-form {
           display: grid;
           gap: 20px;
+        }
+        
+        .image-field {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .image-preview {
+          width: 140px;
+          height: 140px;
+          border-radius: 50%;
+          overflow: hidden;
+          border: 3px solid #0055aa;
+        }
+
+        .image-preview img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .upload-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 18px;
+          border-radius: 999px;
+          background: #003366;
+          color: #fff;
+          font-weight: 600;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .upload-button input {
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          cursor: pointer;
         }
 
         .form-field {

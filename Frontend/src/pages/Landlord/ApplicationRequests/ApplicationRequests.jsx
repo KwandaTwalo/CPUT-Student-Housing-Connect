@@ -1,8 +1,93 @@
-import React from "react";
-import { NavLink , Link } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { FaHome, FaList, FaPlusCircle, FaUsers, FaBuilding } from "react-icons/fa";
+import { logout } from "../../../services/authService";
+
+const initialApplications = [
+  {
+    id: 1,
+    student: "John Doe",
+    accommodation: "Student Residence A",
+    status: "pending",
+  },
+  {
+    id: 2,
+    student: "Jane Smith",
+    accommodation: "House B",
+    status: "approved",
+  },
+];
+
+const statusConfig = {
+  pending: {
+    badgeClass: "pending",
+    label: "Pending",
+    actionLabel: "Approve",
+    nextStatus: "approved",
+  },
+  approved: {
+    badgeClass: "approved",
+    label: "Approved",
+    actionLabel: "Revoke",
+    nextStatus: "pending",
+  },
+  revoked: {
+    badgeClass: "revoked",
+    label: "Revoked",
+    actionLabel: "Approve",
+    nextStatus: "approved",
+  },
+};
 
 export default function ApplicationRequests() {
+  const navigate = useNavigate();
+  const [applications, setApplications] = useState(initialApplications);
+
+  const handleStatusUpdate = (applicationId) => {
+    setApplications((prevApplications) =>
+        prevApplications.map((application) => {
+          if (application.id !== applicationId) {
+            return application;
+          }
+
+          const config = statusConfig[application.status] ?? statusConfig.pending;
+          return {
+            ...application,
+            status: config.nextStatus,
+          };
+        })
+    );
+  };
+
+  const applicationRows = useMemo(() => {
+    return applications.map((application) => {
+      const config = statusConfig[application.status] ?? statusConfig.pending;
+
+      return (
+          <tr key={application.id}>
+            <td>{application.student}</td>
+            <td>{application.accommodation}</td>
+            <td>
+              <span className={`badge ${config.badgeClass}`}>{config.label}</span>
+            </td>
+            <td>
+              <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => handleStatusUpdate(application.id)}
+              >
+                {config.actionLabel}
+              </button>
+            </td>
+          </tr>
+      );
+    });
+  }, [applications]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
   return (
     <div className="dashboard-layout">
       {/* Sidebar */}
@@ -16,7 +101,7 @@ export default function ApplicationRequests() {
       className="profile-img"
     />
     <span className="profile-name">John Doe</span>
-    
+
   </Link>
 </div>
 
@@ -49,6 +134,11 @@ export default function ApplicationRequests() {
             </li>
           </ul>
         </nav>
+        <div className="sidebar-footer">
+          <button type="button" className="btn-logout" onClick={handleLogout}>
+            Sign out
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -67,24 +157,7 @@ export default function ApplicationRequests() {
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>John Doe</td>
-                <td>Student Residence A</td>
-                <td><span className="badge pending">Pending</span></td>
-                <td>
-                  <button className="btn-primary">Approve</button>
-                </td>
-              </tr>
-              <tr>
-                <td>Jane Smith</td>
-                <td>House B</td>
-                <td><span className="badge approved">Approved</span></td>
-                <td>
-                  <button className="btn-primary">Revoke</button>
-                </td>
-              </tr>
-            </tbody>
+            <tbody>{applicationRows}</tbody>
           </table>
         </div>
       </main>
@@ -166,6 +239,26 @@ export default function ApplicationRequests() {
           background: #483ab0;
           color: #fff !important;
         }
+        
+        .sidebar-footer {
+          margin-top: 40px;
+        }
+
+        .btn-logout {
+          width: 100%;
+          padding: 10px 14px;
+          border: none;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .btn-logout:hover {
+          background: rgba(255,255,255,0.3);
+        }
 
         /* Main Content */
         .main-content {
@@ -224,7 +317,7 @@ export default function ApplicationRequests() {
           color: #155724;
         }
 
-        .badge.rejected {
+        .badge.revoked {
           background: #f8d7da;
           color: #721c24;
         }

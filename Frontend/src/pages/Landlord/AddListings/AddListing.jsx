@@ -1,8 +1,66 @@
-import React from "react";
-import { NavLink, Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { FaHome, FaList, FaPlusCircle, FaUsers, FaBuilding } from "react-icons/fa";
+import { logout } from "../../../services/authService";
+
+const initialForm = {
+  name: "",
+  rooms: "",
+  description: "",
+};
 
 export default function AddListing() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState(initialForm);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+    setSelectedImage(file || null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview(null);
+    }
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const summary = [
+      `Name: ${formData.name || "n/a"}`,
+      `Rooms: ${formData.rooms || "n/a"}`,
+      selectedImage ? `Image selected: ${selectedImage.name}` : "No image selected",
+    ].join("\n");
+    alert(`Listing saved (demo):\n${summary}`);
+    setFormData(initialForm);
+    setSelectedImage(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImagePreview(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
   return (
     <div className="dashboard-layout">
           {/* Sidebar */}
@@ -16,7 +74,7 @@ export default function AddListing() {
           className="profile-img"
         />
         <span className="profile-name">John Doe</span>
-        
+
       </Link>
     </div>
 
@@ -49,19 +107,55 @@ export default function AddListing() {
             </li>
           </ul>
         </nav>
+            <div className="sidebar-footer">
+              <button type="button" className="btn-logout" onClick={handleLogout}>
+                Sign out
+              </button>
+            </div>
       </aside>
 
       {/* Main Content */}
       <main className="main-content">
         <header className="header">
           <h1>Create New Listing</h1>
+          <button type="button" className="btn-secondary" onClick={handleLogout}>
+            Sign out
+          </button>
         </header>
 
         <div className="form-card">
-          <form className="listing-form">
-            <input type="text" placeholder="Accommodation Name" />
-            <input type="number" placeholder="Number of Rooms" />
-            <textarea placeholder="Description"></textarea>
+          <form className="listing-form" onSubmit={handleSubmit}>
+            <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Accommodation Name"
+                required
+            />
+            <input
+                type="number"
+                name="rooms"
+                value={formData.rooms}
+                onChange={handleChange}
+                placeholder="Number of Rooms"
+                min="0"
+            />
+            <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Description"
+            ></textarea>
+            <label className="file-picker">
+              <span>Listing image</span>
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+            </label>
+            {imagePreview && (
+                <div className="image-preview">
+                  <img src={imagePreview} alt="Selected listing" />
+                </div>
+            )}
             <button type="submit" className="btn-primary">
               Save Listing
             </button>
@@ -146,6 +240,26 @@ export default function AddListing() {
           background: #483ab0;
           color: #fff !important;
         }
+        
+        .sidebar-footer {
+          margin-top: 40px;
+        }
+
+        .btn-logout {
+          width: 100%;
+          padding: 10px 14px;
+          border: none;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .btn-logout:hover {
+          background: rgba(255,255,255,0.3);
+        }
 
         /* Main Content */
         .main-content {
@@ -153,9 +267,27 @@ export default function AddListing() {
           padding: 40px;
         }
 
-        .header h1 {
-          font-size: 26px;
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           margin-bottom: 25px;
+        }
+        
+        .btn-secondary {
+          background: transparent;
+          color: #003366;
+          border: 1px solid #d0d7e2;
+          padding: 10px 18px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+          background: #003366;
+          color: #fff;
         }
 
         /* Form Card */
@@ -164,7 +296,7 @@ export default function AddListing() {
           padding: 30px;
           border-radius: 12px;
           box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-          max-width: 500px;
+          max-width: 520px;
         }
 
         .listing-form {
@@ -194,6 +326,30 @@ export default function AddListing() {
           height: 100px;
         }
 
+        .file-picker {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          font-weight: 500;
+        }
+
+        .file-picker input {
+          padding: 10px;
+        }
+
+        .image-preview {
+          border: 1px dashed #cbd5f5;
+          border-radius: 12px;
+          overflow: hidden;
+          max-height: 240px;
+        }
+
+        .image-preview img {
+          display: block;
+          width: 100%;
+          object-fit: cover;
+        }
+
         .btn-primary {
           background: #483ab0;
           color: white;
@@ -201,9 +357,8 @@ export default function AddListing() {
           border: none;
           border-radius: 8px;
           cursor: pointer;
-          font-size: 15px;
-          font-weight: 500;
-          transition: background 0.2s;
+          font-weight: 600;
+          transition: 0.2s;
         }
 
         .btn-primary:hover {

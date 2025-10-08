@@ -1,8 +1,17 @@
 import React from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { FaHome, FaList, FaPlusCircle, FaUsers, FaBuilding } from "react-icons/fa";
+import { logout } from "../../../services/authService";
+
 
 export default function MyListings() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div className="dashboard-layout">
       {/* Sidebar */}
@@ -16,7 +25,7 @@ export default function MyListings() {
               className="profile-img"
             />
             <span className="profile-name">John Doe</span>
-            
+
           </Link>
         </div>
 
@@ -49,15 +58,25 @@ export default function MyListings() {
             </li>
           </ul>
         </nav>
+        <div className="sidebar-footer">
+          <button type="button" className="btn-logout" onClick={handleLogout}>
+            Sign out
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
       <main className="main-content">
         <header className="header">
           <h1>My Listings</h1>
-          <Link to="/add-listing">
-            <button className="btn-primary">+ Add Listing</button>
-          </Link>
+          <div className="header-actions">
+            <button type="button" className="btn-secondary" onClick={handleLogout}>
+              Sign out
+            </button>
+            <Link to="/add-listing">
+              <button className="btn-primary">+ Add Listing</button>
+            </Link>
+          </div>
         </header>
 
         <section className="listing-grid">
@@ -164,6 +183,26 @@ export default function MyListings() {
           background: #483ab0;
           color: #fff !important;
         }
+        
+        .sidebar-footer {
+          margin-top: 40px;
+        }
+
+        .btn-logout {
+          width: 100%;
+          padding: 10px 14px;
+          border: none;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .btn-logout:hover {
+          background: rgba(255,255,255,0.3);
+        }
 
         /* Main Content */
         .main-content {
@@ -176,6 +215,27 @@ export default function MyListings() {
           justify-content: space-between;
           align-items: center;
           margin-bottom: 30px;
+        }
+        
+        .header-actions {
+          display: flex;
+          gap: 12px;
+        }
+
+        .btn-secondary {
+          background: transparent;
+          color: #003366;
+          border: 1px solid #d0d7e2;
+          padding: 10px 18px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+          background: #003366;
+          color: #fff;
         }
 
         h1 {
@@ -199,45 +259,30 @@ export default function MyListings() {
         /* Listings */
         .listing-grid {
           display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
           gap: 20px;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         }
 
         .listing-card {
           background: white;
           padding: 20px;
           border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-          transition: transform 0.2s;
-        }
+                    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 
-        .listing-card:hover {
-          transform: translateY(-5px);
         }
-
-        .listing-card h3 {
-          margin-bottom: 8px;
-          color: #222;
-        }
-
-        .listing-card p {
-          color: #666;
-          margin-bottom: 10px;
-        }
-
-        /* Progress Bar */
+        
         .progress-bar {
-          width: 100%;
-          background: #eee;
-          border-radius: 8px;
+          height: 8px;
+          background: #e0e0e0;
+          border-radius: 4px;
           overflow: hidden;
-          height: 10px;
+          margin-top: 10px;
         }
 
         .progress-bar span {
           display: block;
           height: 100%;
-          background: #27ae60;
+          background: #483ab0;
         }
       `}</style>
     </div>

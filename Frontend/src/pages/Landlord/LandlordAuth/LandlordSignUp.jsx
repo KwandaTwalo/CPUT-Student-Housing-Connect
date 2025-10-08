@@ -9,6 +9,7 @@ export default function LandlordSignup() {
     username: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -54,15 +55,24 @@ export default function LandlordSignup() {
             style={styles.input}
             required
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
+          <div style={styles.passwordField}>
+            <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                style={{ ...styles.input, marginBottom: 0 }}
+                required
+            />
+            <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                style={styles.toggleButton}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
           <button type="submit" style={styles.button}>
             Sign Up
           </button>
@@ -108,6 +118,19 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #ddd",
     fontSize: "14px",
+  },
+  passwordField: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  toggleButton: {
+    padding: "12px",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
+    background: "#f1f5f9",
+    cursor: "pointer",
+    fontWeight: 600,
   },
   button: {
     padding: "12px",

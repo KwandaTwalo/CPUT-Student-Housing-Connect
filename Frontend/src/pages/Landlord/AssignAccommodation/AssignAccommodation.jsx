@@ -1,8 +1,16 @@
 import React from "react";
-import { NavLink , Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { FaHome, FaList, FaPlusCircle, FaUsers, FaBuilding } from "react-icons/fa";
+import { logout } from "../../../services/authService";
 
 export default function AssignAccommodation() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div className="dashboard-layout">
       {/* Sidebar */}
@@ -16,7 +24,7 @@ export default function AssignAccommodation() {
       className="profile-img"
     />
     <span className="profile-name">John Doe</span>
-    
+
   </Link>
 </div>
 
@@ -49,12 +57,20 @@ export default function AssignAccommodation() {
             </li>
           </ul>
         </nav>
+        <div className="sidebar-footer">
+          <button type="button" className="btn-logout" onClick={handleLogout}>
+            Sign out
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
       <main className="main-content">
         <header className="header">
           <h1>Assign Accommodation</h1>
+          <button type="button" className="btn-secondary" onClick={handleLogout}>
+            Sign out
+          </button>
         </header>
 
         <div className="assign-card">
@@ -155,6 +171,26 @@ export default function AssignAccommodation() {
           background: #483ab0;
           color: #fff !important;
         }
+        
+        .sidebar-footer {
+          margin-top: 40px;
+        }
+
+        .btn-logout {
+          width: 100%;
+          padding: 10px 14px;
+          border: none;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .btn-logout:hover {
+          background: rgba(255,255,255,0.3);
+        }
 
         /* Main Content */
         .main-content {
@@ -162,9 +198,27 @@ export default function AssignAccommodation() {
           padding: 40px;
         }
 
-        .header h1 {
-          font-size: 26px;
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           margin-bottom: 25px;
+        }
+        
+        .btn-secondary {
+          background: transparent;
+          color: #003366;
+          border: 1px solid #d0d7e2;
+          padding: 10px 18px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+          background: #003366;
+          color: #fff;
         }
 
         /* Assign Form Card */
@@ -198,8 +252,8 @@ export default function AssignAccommodation() {
 
         select:focus {
           outline: none;
-          border: 1px solid #483ab0;
-        }
+border-color: #483ab0;
+          box-shadow: 0 0 0 2px rgba(72,58,176,0.2);        }
 
         .btn-primary {
           background: #483ab0;
@@ -208,8 +262,7 @@ export default function AssignAccommodation() {
           border: none;
           border-radius: 8px;
           cursor: pointer;
-          font-size: 15px;
-          font-weight: 500;
+          font-weight: 600;
           transition: 0.2s;
         }
 

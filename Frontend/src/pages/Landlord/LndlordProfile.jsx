@@ -1,24 +1,31 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { FaHome,
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FaHome,
   FaList,
   FaUser,
   FaUsers,
-   FaCheckCircle,
-    FaTimesCircle,
-  FaBuilding, } from "react-icons/fa";
+  FaCheckCircle,
+  FaTimesCircle,
+  FaBuilding,
+} from "react-icons/fa";
+import { logout } from "../../services/authService";
 
 export default function LandlordProfilePage() {
-  // Example landlord data
-  const landlord = {
+  const navigate = useNavigate();
+  const [landlord] = useState({
     landlordID: 1,
     landlordFirstName: "John",
     landlordLastName: "Doe",
     isVerified: true,
     dateRegistered: "2023-04-15",
     password: "********",
-    profilePicture: "/profile-pic.jpg", // Path to profile picture
-  };
+    profilePicture: "/profile-pic.jpg",
+  });
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });  };
 
   return (
     <div className="landlord-profile-page">
@@ -56,12 +63,20 @@ export default function LandlordProfilePage() {
           </li>
         </ul>
       </nav>
+        <div className="sidebar-footer">
+          <button type="button" className="btn-logout" onClick={handleLogout}>
+            Sign out
+          </button>
+        </div>
     </aside>
 
       {/* Main content */}
       <main className="main-content">
         <header className="header">
           <h1>My Profile</h1>
+          <button type="button" className="btn-secondary" onClick={handleLogout}>
+            Sign out
+          </button>
         </header>
 
         <section className="profile-details">
@@ -158,14 +173,53 @@ export default function LandlordProfilePage() {
           background: #483ab0;
           color: #fff;
         }
+        
+        .sidebar-footer {
+          margin-top: 40px;
+        }
+
+        .btn-logout {
+          width: 100%;
+          padding: 10px 14px;
+          border: none;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .btn-logout:hover {
+          background: rgba(255,255,255,0.3);
+        }
 
         .main-content {
           flex: 1;
           padding: 30px;
         }
 
-        .header h1 {
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           margin-bottom: 30px;
+        }
+        
+        .btn-secondary {
+          background: transparent;
+          color: #003366;
+          border: 1px solid #d0d7e2;
+          padding: 10px 18px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+          background: #003366;
+          color: #fff;
         }
 
         .profile-details {
@@ -201,14 +255,24 @@ export default function LandlordProfilePage() {
         }
 
         .btn-primary {
-          background: #483ab0;
-          color: white;
-          padding: 10px 20px;
+          background: linear-gradient(135deg, #003366, #0055aa);
+          color: #ffffff
           border: none;
+                    padding: 12px 24px;
           border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
           cursor: pointer;
-          margin-top: 20px;
+transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+
+        .btn-primary:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 10px 20px rgba(0, 85, 170, 0.2);
+        }
+
+        .btn-primary:active {
+          transform: translateY(0);        }
       `}</style>
     </div>
   );

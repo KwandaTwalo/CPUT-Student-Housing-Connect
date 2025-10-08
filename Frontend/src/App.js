@@ -25,6 +25,7 @@ import SearchAccommodation from "./pages/Student/SearchAccommodation/SearchAccom
 import AccommodationDetails from "./pages/Student/AccomodationDetails/AccommodationDetails";
 import MyApplications from "./pages/Student/MyApplications/MyApplications";
 import SubmitReview from "./pages/Student/SubmitReview/SubmitReview";
+import StudentSignUp from "./pages/Student/StudentSignUp/StudentSignUp";
 
 function App() {
   return (
@@ -45,7 +46,8 @@ function App() {
             element={<LoginPage defaultRole="admin" />}
         />
         <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/logout" element={<LogoutPage />} />
+          <Route path="/student/signup" element={<StudentSignUp />} />
+          <Route path="/logout" element={<LogoutPage />} />
 
 
         {/* Landlord routes */}

@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   FaHome,
   FaList,
@@ -9,8 +9,16 @@ import {
   FaBell,
   FaSearch,
 } from "react-icons/fa";
+import { logout } from "../../services/authService";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
    <div className="dashboard-layout">
          {/* Sidebar */}
@@ -24,7 +32,7 @@ export default function Dashboard() {
          className="profile-img"
        />
        <span className="profile-name">John Doe</span>
-       
+
      </Link>
    </div>
 
@@ -63,6 +71,11 @@ export default function Dashboard() {
             </li>
           </ul>
         </nav>
+           <div className="sidebar-footer">
+             <button type="button" className="btn-logout" onClick={handleLogout}>
+               Sign out
+             </button>
+           </div>
       </aside>
 
       {/* Main content */}
@@ -76,6 +89,9 @@ export default function Dashboard() {
               <input type="text" placeholder="Search..." />
             </div>
             <FaBell className="icon-btn" />
+            <button type="button" className="btn-secondary" onClick={handleLogout}>
+              Sign out
+            </button>
             <Link to="/add-listing">
               <button className="btn-primary">+ Create Listing</button>
             </Link>
@@ -130,9 +146,9 @@ export default function Dashboard() {
        }
 
        .main-content {
-       flex: 1;           
+       flex: 1;
        padding: 20px;
-       overflow-y: auto;  
+       overflow-y: auto;
        }
 
 
@@ -203,39 +219,61 @@ export default function Dashboard() {
           color: #fff !important;
         }
 
-        /* Header */
-        .header {
+.sidebar-footer {
+          margin-top: 40px;
+        }
+
+        .btn-logout {
+          width: 100%;
+          padding: 10px 14px;
+          border: none;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .btn-logout:hover {
+          background: rgba(255,255,255,0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+          flex: 1;
+          padding: 20px;
+          overflow-y: auto;
+        }
+          .header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 30px;
         }
 
         .header-actions {
           display: flex;
           align-items: center;
-          gap: 15px;
+          gap: 16px;
         }
 
         .search-box {
           display: flex;
           align-items: center;
+          gap: 8px;
           background: white;
+          padding: 8px 12px;
           border-radius: 8px;
-          padding: 5px 10px;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
         .search-box input {
           border: none;
           outline: none;
-          margin-left: 5px;
         }
 
         .icon-btn {
-          font-size: 20px;
+          font-size: 18px;
           cursor: pointer;
-          color: #333;
         }
 
         .btn-primary {
@@ -245,42 +283,60 @@ export default function Dashboard() {
           border: none;
           border-radius: 8px;
           cursor: pointer;
+          transition: 0.2s;
         }
 
-        /* Stats Grid */
+        .btn-primary:hover {
+          background: #372a8a;
+        }
+
+        .btn-secondary {
+          background: transparent;
+          color: #003366;
+          border: 1px solid #d0d7e2;
+          padding: 10px 18px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+          background: #003366;
+          color: #fff;
+        }
+
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
           gap: 20px;
-          margin-bottom: 30px;
+          margin: 30px 0;
         }
 
         .stat-card {
           background: white;
-          border-radius: 15px;
           padding: 20px;
+          border-radius: 12px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.08);
           text-align: center;
-          font-weight: bold;
-          box-shadow: 0 3px 8px rgba(0,0,0,0.1);
         }
 
         .stat-card h3 {
-          font-size: 14px;
           margin-bottom: 10px;
-          color: #777;
+          font-size: 18px;
         }
 
         .stat-card p {
-          font-size: 28px;
-          color: #222;
+          font-size: 24px;
+          font-weight: bold;
+          margin: 0;
         }
+        
+        .purple { border-top: 4px solid #6c5ce7; }
+        .green { border-top: 4px solid #00b894; }
+        .orange { border-top: 4px solid #fdcb6e; }
+        .blue { border-top: 4px solid #0984e3; }
 
-        .purple { border-top: 4px solid #8e44ad; }
-        .green { border-top: 4px solid #27ae60; }
-        .orange { border-top: 4px solid #e67e22; }
-        .blue { border-top: 4px solid #3498db; }
-
-        /* Progress Section */
         .progress-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -289,10 +345,9 @@ export default function Dashboard() {
 
         .progress-card {
           background: white;
-          border-radius: 15px;
           padding: 20px;
-          box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-        }
+          border-radius: 12px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.08);        }
 
         .circle {
           width: 100px;
@@ -303,24 +358,23 @@ export default function Dashboard() {
           align-items: center;
           justify-content: center;
           margin: 20px auto;
-          font-size: 20px;
           font-weight: bold;
-          color: #483ab0;
+          font-size: 20px;
         }
 
         .progress-bar {
           width: 100%;
-          background: #eee;
-          border-radius: 8px;
+          height: 10px;
+          background: #e0e0e0;
+          border-radius: 5px;
           overflow: hidden;
-          height: 12px;
-          margin: 15px 0;
+          margin: 10px 0;
         }
 
         .progress-bar span {
           display: block;
           height: 100%;
-          background: #27ae60;
+          background: #483ab0;
         }
       `}</style>
     </div>

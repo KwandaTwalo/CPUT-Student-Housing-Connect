@@ -16,6 +16,7 @@ function Login({ defaultRole = "" }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(location.state?.message || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const resolveRedirect = useCallback((resolvedRole) => {
     switch (resolvedRole) {
@@ -95,15 +96,23 @@ function Login({ defaultRole = "" }) {
               style={styles.input}
               required
           />
-          <input
-              type="password"
+          <div style={styles.passwordField}>
+            <input
+                type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              style={styles.input}
+                style={{ ...styles.input, marginBottom: 0 }}
               required
-          />
-
+            />
+            <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                style={styles.toggleButton}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
           {error && <div style={styles.error}>{error}</div>}
 
           <button
@@ -193,6 +202,20 @@ const styles = {
     fontSize: "15px",
     outline: "none",
     transition: "border 0.2s ease, box-shadow 0.2s ease",
+  },
+  passwordField: {
+    display: "flex",
+    alignItems: "center",
+    width: "100%",
+    gap: "8px",
+  },
+  toggleButton: {
+    padding: "12px 14px",
+    borderRadius: "10px",
+    border: "1px solid #d6ddec",
+    background: "#f1f5f9",
+    cursor: "pointer",
+    fontWeight: 600,
   },
   button: {
     marginTop: "6px",

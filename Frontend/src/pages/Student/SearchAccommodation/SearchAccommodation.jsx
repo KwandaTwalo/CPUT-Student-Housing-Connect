@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { searchAccommodations } from "../../../services/accommodationService";
 
 const initialFilters = {
+    query: "",
     minRent: "",
     maxRent: "",
     wifiAvailable: "any",
@@ -31,12 +32,27 @@ const booleanOptions = [
     { value: "true", label: "Yes" },
     { value: "false", label: "No" },
 ];
+
+const searchOptions = [
+    "Student Residence A",
+    "Student House B",
+    "Residence C",
+    "Cape Town",
+    "Bellville",
+    "Belhar",
+    "Observatory",
+    "Studio apartment",
+    "Single room",
+    "Double room",
+];
+
 function SearchAccommodation() {
     const navigate = useNavigate();
     const [filters, setFilters] = useState(initialFilters);
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
 
     const normaliseBoolean = useCallback((value) => {
         if (value === "true") return true;
@@ -47,6 +63,7 @@ function SearchAccommodation() {
     const buildPayload = useCallback(() => {
         const payload = {};
 
+        if (filters.query) payload.query = filters.query;
         if (filters.minRent) payload.minRent = filters.minRent;
         if (filters.maxRent) payload.maxRent = filters.maxRent;
         if (filters.maxDistanceFromCampus) payload.maxDistanceFromCampus = filters.maxDistanceFromCampus;
@@ -84,9 +101,31 @@ function SearchAccommodation() {
         loadResults();
     }, [loadResults]);
 
+    const handleQueryChange = (value) => {
+        setFilters((prev) => ({ ...prev, query: value }));
+        if (!value) {
+            setSuggestions([]);
+            return;
+        }
+        const lowerValue = value.toLowerCase();
+        const matches = searchOptions
+            .filter((option) => option.toLowerCase().includes(lowerValue))
+            .slice(0, 6);
+        setSuggestions(matches);
+    };
+
     const handleInputChange = (event) => {
         const { name, value } = event.target;
+        if (name === "query") {
+            handleQueryChange(value);
+            return;
+        }
         setFilters((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSuggestionClick = (option) => {
+        setFilters((prev) => ({ ...prev, query: option }));
+        setSuggestions([]);
     };
 
     const handleSearch = (event) => {
@@ -97,11 +136,13 @@ function SearchAccommodation() {
 
     const handleReset = () => {
         setFilters(initialFilters);
+        setSuggestions([]);
         loadResults();
     };
 
     const filterChips = useMemo(() => {
         return [
+            filters.query && `Search: ${filters.query}`,
             filters.city && `City: ${filters.city}`,
             filters.suburb && `Suburb: ${filters.suburb}`,
             filters.roomType && `Room: ${filters.roomType}`,
@@ -126,6 +167,32 @@ function SearchAccommodation() {
           </div>
 
           <form style={styles.filterCard} onSubmit={handleSearch}>
+              <div style={styles.searchField}>
+                  <label>Search</label>
+                  <div style={styles.searchInputWrapper}>
+                      <input
+                          type="text"
+                          name="query"
+                          value={filters.query}
+                          onChange={handleInputChange}
+                          placeholder="Search by residence, city, suburb..."
+                          autoComplete="off"
+                      />
+                      {suggestions.length > 0 && (
+                          <ul style={styles.suggestionList}>
+                              {suggestions.map((option) => (
+                                  <li
+                                      key={option}
+                                      style={styles.suggestionItem}
+                                      onMouseDown={() => handleSuggestionClick(option)}
+                                  >
+                                      {option}
+                                  </li>
+                              ))}
+                          </ul>
+                      )}
+                  </div>
+              </div>
               <div style={styles.filterGrid}>
                   <div style={styles.field}>
                       <label>Minimum rent (R)</label>
@@ -334,6 +401,35 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         gap: "24px",
+    },
+    searchField: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        position: "relative",
+    },
+    searchInputWrapper: {
+        position: "relative",
+    },
+    suggestionList: {
+        position: "absolute",
+        top: "100%",
+        left: 0,
+        right: 0,
+        backgroundColor: "#ffffff",
+        border: "1px solid #e2e8f0",
+        borderRadius: "12px",
+        margin: 0,
+        padding: 0,
+        listStyle: "none",
+        boxShadow: "0 12px 30px rgba(15, 23, 42, 0.18)",
+        zIndex: 10,
+        maxHeight: "220px",
+        overflowY: "auto",
+    },
+    suggestionItem: {
+        padding: "10px 14px",
+        cursor: "pointer",
     },
     filterGrid: {
         display: "grid",
