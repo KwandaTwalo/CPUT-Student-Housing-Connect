@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { searchAccommodations } from "../../../services/accommodationService";
 
 const initialFilters = {
@@ -51,6 +49,75 @@ const searchOptions = [
 
 const CAPE_TOWN_COORDINATES = [-33.9249, 18.4241];
 const coordinateCache = new Map();
+
+const LEAFLET_SCRIPT_ID = "leaflet-js";
+const LEAFLET_STYLESHEET_ID = "leaflet-css";
+const LEAFLET_SCRIPT_URL = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+const LEAFLET_STYLESHEET_URL = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+const LEAFLET_PROMISE_KEY = Symbol.for("cput.studentHousing.leafletPromise");
+
+const ensureLeafletLoaded = () => {
+    if (typeof window === "undefined") {
+        return Promise.reject(new Error("Leaflet is only available in the browser."));
+    }
+
+    if (window.L) {
+        return Promise.resolve(window.L);
+    }
+
+    if (window[LEAFLET_PROMISE_KEY]) {
+        return window[LEAFLET_PROMISE_KEY];
+    }
+
+    if (!document.getElementById(LEAFLET_STYLESHEET_ID)) {
+        const link = document.createElement("link");
+        link.id = LEAFLET_STYLESHEET_ID;
+        link.rel = "stylesheet";
+        link.href = LEAFLET_STYLESHEET_URL;
+        document.head.appendChild(link);
+    }
+
+    window[LEAFLET_PROMISE_KEY] = new Promise((resolve, reject) => {
+        const existingScript = document.getElementById(LEAFLET_SCRIPT_ID);
+
+        if (existingScript) {
+            existingScript.addEventListener("load", () => {
+                if (window.L) {
+                    resolve(window.L);
+                } else {
+                    reject(new Error("Leaflet failed to initialise."));
+                }
+            }, { once: true });
+            existingScript.addEventListener("error", () => {
+                reject(new Error("Unable to load Leaflet resources."));
+            }, { once: true });
+            return;
+        }
+
+        const script = document.createElement("script");
+        script.id = LEAFLET_SCRIPT_ID;
+        script.src = LEAFLET_SCRIPT_URL;
+        script.async = true;
+        script.onload = () => {
+            if (window.L) {
+                resolve(window.L);
+            } else {
+                reject(new Error("Leaflet failed to initialise."));
+            }
+        };
+        script.onerror = () => {
+            reject(new Error("Unable to load Leaflet resources."));
+        };
+
+        document.body.appendChild(script);
+    })
+        .catch((error) => {
+            delete window[LEAFLET_PROMISE_KEY];
+            throw error;
+        });
+
+    return window[LEAFLET_PROMISE_KEY];
+};
 
 const buildListingKey = (listing) =>
     [listing.streetAddress, listing.suburb, listing.city, listing.postalCode, listing.id].filter(Boolean).join("|");
@@ -117,6 +184,9 @@ function SearchAccommodation() {
     const mapInstanceRef = useRef(null);
     const markerLayerRef = useRef(null);
     const resultKeyRef = useRef("");
+    const leafletRef = useRef(null);
+    const [mapReady, setMapReady] = useState(false);
+    const [mapError, setMapError] = useState("");
 
     const normaliseBoolean = useCallback((value) => {
         if (value === "true") return true;
@@ -166,24 +236,59 @@ function SearchAccommodation() {
     }, [loadResults]);
 
     useEffect(() => {
-        if (!mapContainerRef.current || mapInstanceRef.current) {
-            return;
+        let isMounted = true;
+
+        setMapError("");
+
+        ensureLeafletLoaded()
+            .then((leaflet) => {
+                if (!isMounted) {
+                    return;
+                }
+                leafletRef.current = leaflet;
+                setMapReady(true);
+            })
+            .catch(() => {
+                if (!isMounted) {
+                    return;
+                }
+                leafletRef.current = null;
+                setMapReady(false);
+                setMapError("Unable to load the interactive map right now. Please try again later.");
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!mapReady || !leafletRef.current || !mapContainerRef.current || mapInstanceRef.current) {            return;
         }
 
-        mapInstanceRef.current = L.map(mapContainerRef.current, {
-            center: CAPE_TOWN_COORDINATES,
+        const leaflet = leafletRef.current;
+
+        mapInstanceRef.current = leaflet.map(mapContainerRef.current, {            center: CAPE_TOWN_COORDINATES,
             zoom: 12,
             zoomControl: false,
         });
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        leaflet.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; OpenStreetMap contributors",
             maxZoom: 19,
         }).addTo(mapInstanceRef.current);
 
-        L.control.zoom({ position: "bottomright" }).addTo(mapInstanceRef.current);
-        markerLayerRef.current = L.layerGroup().addTo(mapInstanceRef.current);
-    }, []);
+        leaflet.control.zoom({ position: "bottomright" }).addTo(mapInstanceRef.current);
+        markerLayerRef.current = leaflet.layerGroup().addTo(mapInstanceRef.current);
+
+        return () => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove();
+            }
+            mapInstanceRef.current = null;
+            markerLayerRef.current = null;
+        };
+    }, [mapReady]);
 
     const handleSelectListing = useCallback((listing) => {
         setSelectedListingId(listing.id);
@@ -197,7 +302,8 @@ function SearchAccommodation() {
     useEffect(() => {
         const map = mapInstanceRef.current;
         const markerLayer = markerLayerRef.current;
-        if (!map || !markerLayer) {
+        const leaflet = leafletRef.current;
+        if (!map || !markerLayer || !leaflet) {
             return;
         }
 
@@ -215,7 +321,7 @@ function SearchAccommodation() {
         results.forEach((listing) => {
             const coordinates = resolveListingCoordinates(listing);
             const isSelected = listing.id === selectedListingId;
-            const marker = L.circleMarker(coordinates, {
+            const marker = leaflet.circleMarker(coordinates, {
                 radius: isSelected ? 12 : 8,
                 color: isSelected ? "#1d4ed8" : "#38bdf8",
                 weight: isSelected ? 3 : 2,
@@ -231,7 +337,7 @@ function SearchAccommodation() {
                 }${listing.city || "Cape Town"}`
             );
             markerLayer.addLayer(marker);
-            bounds.push(L.latLng(coordinates[0], coordinates[1]));
+            bounds.push(leaflet.latLng(coordinates[0], coordinates[1]));
         });
 
         if (!selectedListingId && results[0]) {
@@ -242,7 +348,7 @@ function SearchAccommodation() {
             if (bounds.length === 1) {
                 map.flyTo(bounds[0], 14, { duration: 0.6 });
             } else if (bounds.length > 1) {
-                map.fitBounds(L.latLngBounds(bounds), { padding: [48, 48], maxZoom: 14 });
+                map.fitBounds(leaflet.latLngBounds(bounds), { padding: [48, 48], maxZoom: 14 });
             }
             resultKeyRef.current = listingIds;
         }
@@ -703,8 +809,11 @@ function SearchAccommodation() {
                         <div ref={mapContainerRef} style={styles.mapContainer} />
                         <div style={styles.mapOverlay}>
                             <span style={styles.mapBadge}>Interactive Cape Town map</span>
-                            {selectedListing ? (
-                                <div style={styles.mapListingDetails}>
+                            {mapError ? (
+                                <p style={styles.mapError}>{mapError}</p>
+                            ) : !mapReady ? (
+                                <p style={styles.mapPlaceholder}>Loading interactive map...</p>
+                            ) : selectedListing ? (                                <div style={styles.mapListingDetails}>
                                     <strong>{selectedListing.streetAddress || "Selected listing"}</strong>
                                     <span>
                                         {[selectedListing.suburb, selectedListing.city].filter(Boolean).join(", ") ||
@@ -715,7 +824,7 @@ function SearchAccommodation() {
                             ) : (
                                 <p style={styles.mapPlaceholder}>Hover or tap on a listing to highlight it on the map.</p>
                             )}
-                            {selectedListing && (
+                            {selectedListing && mapReady && !mapError && (
                                 <button
                                     type="button"
                                     style={styles.mapButton}
@@ -1092,6 +1201,7 @@ const styles = {
         width: "100%",
         height: "100%",
         minHeight: "520px",
+        background: "linear-gradient(135deg, rgba(30, 64, 175, 0.15), rgba(14, 165, 233, 0.1))",
     },
     mapOverlay: {
         position: "absolute",
@@ -1123,6 +1233,11 @@ const styles = {
         margin: 0,
         fontSize: "14px",
         color: "rgba(226, 232, 240, 0.8)",
+    },
+    mapError: {
+        margin: 0,
+        fontSize: "14px",
+        color: "#fecaca",
     },
     mapButton: {
         alignSelf: "flex-start",
