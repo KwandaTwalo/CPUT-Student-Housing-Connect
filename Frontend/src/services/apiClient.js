@@ -3,7 +3,7 @@ const API_BASE_URL =
     "http://localhost:8080/HouseConnect";
 
 const buildUrl = (path) => {
-    if (!path.startswith("/")) {
+    if (!path.startsWith("/")) {
         return `${API_BASE_URL}/${path}`;
     }
     return `${API_BASE_URL}${path}`;

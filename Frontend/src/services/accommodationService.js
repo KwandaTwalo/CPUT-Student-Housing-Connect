@@ -37,9 +37,38 @@ export const fetchAccommodation = async (id) => {
     return response;
 };
 
+export const createAccommodation = async (accommodationPayload) => {
+    if (!accommodationPayload) {
+        throw new Error("Accommodation details are required");
+    }
+
+    return apiClient.post("/Accommodation/create", accommodationPayload);
+};
+
+export const updateAccommodation = async (accommodationPayload) => {
+    const accommodationId = accommodationPayload?.accommodationID ?? accommodationPayload?.id;
+    if (!accommodationId) {
+        throw new Error("Accommodation id is required for updates");
+    }
+
+    return apiClient.put("/Accommodation/update", accommodationPayload);
+};
+
+export const fetchLandlordListings = async (landlordId, filters = {}) => {
+    if (!landlordId) {
+        throw new Error("Landlord id is required to fetch listings");
+    }
+
+    const results = await searchAccommodations({ ...filters, landlordId });
+    return Array.isArray(results) ? results : [];
+};
+
 const accommodationService = {
     searchAccommodations,
     fetchAccommodation,
+    createAccommodation,
+    updateAccommodation,
+    fetchLandlordListings,
 };
 
 export default accommodationService;

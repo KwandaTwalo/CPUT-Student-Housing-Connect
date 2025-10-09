@@ -9,8 +9,31 @@ export const createLandlord = async (landlordPayload) => {
     return response;
 };
 
+export const fetchLandlord = async (landlordId) => {
+    if (!landlordId) {
+        throw new Error("Landlord id is required");
+    }
+
+    const response = await apiClient.get(`/Landlord/read/${landlordId}`);
+    if (!response) {
+        throw new Error("Landlord profile not found");
+    }
+    return response;
+};
+
+export const updateLandlord = async (landlordPayload) => {
+    const landlordId = landlordPayload?.landlordID ?? landlordPayload?.id;
+    if (!landlordId) {
+        throw new Error("Landlord id is required for updates");
+    }
+
+    return apiClient.put("/Landlord/update", landlordPayload);
+};
+
 const landlordService = {
     createLandlord,
+    fetchLandlord,
+    updateLandlord,
 };
 
 export default landlordService;
