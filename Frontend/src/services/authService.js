@@ -30,7 +30,7 @@ export const login = async (role, email, password) => {
     }
 
     const payload = {
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         password,
     };
 

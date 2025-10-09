@@ -14,6 +14,7 @@ import co.za.cput.repository.business.VerificationRepository;
 import co.za.cput.repository.users.AdministratorRepository;
 import co.za.cput.repository.users.LandLordRepository;
 import co.za.cput.repository.users.StudentRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -32,19 +33,22 @@ public class DataSeeder implements CommandLineRunner {
     private final AccommodationRepository accommodationRepository;
     private final VerificationRepository verificationRepository;
     private final BookingRepository bookingRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(AdministratorRepository administratorRepository,
                       LandLordRepository landLordRepository,
                       StudentRepository studentRepository,
                       AccommodationRepository accommodationRepository,
                       VerificationRepository verificationRepository,
-                      BookingRepository bookingRepository) {
+                      BookingRepository bookingRepository,
+                      PasswordEncoder passwordEncoder) {
         this.administratorRepository = administratorRepository;
         this.landLordRepository = landLordRepository;
         this.studentRepository = studentRepository;
         this.accommodationRepository = accommodationRepository;
         this.verificationRepository = verificationRepository;
         this.bookingRepository = bookingRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -173,7 +177,7 @@ public class DataSeeder implements CommandLineRunner {
         return new Administrator.Builder()
                 .setAdminName("Agnes")
                 .setAdminSurname("Mokoena")
-                .setAdminPassword("Admin1234")
+                .setAdminPassword(passwordEncoder.encode("Admin1234"))
                 .setAdminRoleStatus(Administrator.AdminRoleStatus.ACTIVE)
                 .setContact(adminContact)
                 .build();
@@ -200,7 +204,7 @@ public class DataSeeder implements CommandLineRunner {
                 .setLandlordLastName(lastName)
                 .setVerified(verified)
                 .setDateRegistered(LocalDate.now().minusMonths(3))
-                .setPassword(password)
+                .setPassword(passwordEncoder.encode(password))
                 .setContact(contact)
                 .build();
     }
@@ -256,7 +260,7 @@ public class DataSeeder implements CommandLineRunner {
                 .setStudentSurname("Jacobs")
                 .setDateOfBirth(LocalDate.now().minusYears(20))
                 .setGender("Female")
-                .setPassword("Student1234")
+                .setPassword(passwordEncoder.encode("Student1234"))
                 .setRegistrationDate(LocalDateTime.now().minusMonths(2))
                 .setIsStudentVerified(true)
                 .setFundingStatus(Student.FundingStatus.FUNDED)

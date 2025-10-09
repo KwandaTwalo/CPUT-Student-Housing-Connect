@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/HouseConnect/Contact")
+@RequestMapping("/api/contacts")
 public class ContactController {
 
     private ContactServiceImpl contactService;

@@ -7,11 +7,14 @@ import co.za.cput.dto.LoginResponse;
 import co.za.cput.repository.users.AdministratorRepository;
 import co.za.cput.repository.users.LandLordRepository;
 import co.za.cput.repository.users.StudentRepository;
+import co.za.cput.service.users.LoginRateLimiter;
+import co.za.cput.service.users.TooManyLoginAttemptsException;
 import co.za.cput.util.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.time.Duration;
+import java.util.Locale;
 
 @Service
 public class AuthenticationService {
@@ -19,47 +22,65 @@ public class AuthenticationService {
     private final AdministratorRepository administratorRepository;
     private final LandLordRepository landLordRepository;
     private final StudentRepository studentRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final LoginRateLimiter loginRateLimiter;
 
     @Autowired
     public AuthenticationService(AdministratorRepository administratorRepository,
                                  LandLordRepository landLordRepository,
-                                 StudentRepository studentRepository) {
+                                 StudentRepository studentRepository,
+                                 PasswordEncoder passwordEncoder,
+                                 LoginRateLimiter loginRateLimiter) {
         this.administratorRepository = administratorRepository;
         this.landLordRepository = landLordRepository;
         this.studentRepository = studentRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
-    public Optional<LoginResponse> login(String email, String password) {
+    public LoginResponse login(String email, String password) {
         if (Helper.isNullorEmpty(email) || Helper.isNullorEmpty(password)) {
             throw new IllegalArgumentException("Email and password are required");
         }
 
-        String normalisedEmail = email.trim();
+        String normalisedEmail = email.trim().toLowerCase(Locale.ROOT);
 
-        Optional<Administrator> administratorOptional = administratorRepository.findByContact_EmailIgnoreCase(normalisedEmail);
-        if (administratorOptional.isPresent()) {
-            Administrator administrator = administratorOptional.get();
-            if (password.equals(administrator.getAdminPassword())) {
-                return Optional.of(LoginResponse.successForAdministrator(administrator));
-            }
+        if (loginRateLimiter.isBlocked(normalisedEmail)) {
+            Duration remaining = loginRateLimiter.timeUntilUnlock(normalisedEmail);
+            long minutes = Math.max(1, remaining.toMinutes());
+            throw new TooManyLoginAttemptsException(
+                    String.format("Too many failed attempts. Please try again in %d minute%s.", minutes, minutes == 1 ? "" : "s")
+            );
         }
 
-        Optional<Landlord> landlordOptional = landLordRepository.findByContact_EmailIgnoreCase(normalisedEmail);
-        if (landlordOptional.isPresent()) {
-            Landlord landlord = landlordOptional.get();
-            if (password.equals(landlord.getPassword())) {
-                return Optional.of(LoginResponse.successForLandlord(landlord));
-            }
+        Administrator administrator = administratorRepository.findByContact_EmailIgnoreCase(normalisedEmail).orElse(null);
+        if (administrator != null && passwordMatches(password, administrator.getAdminPassword())) {
+            loginRateLimiter.resetAttempts(normalisedEmail);
+            return LoginResponse.successForAdministrator(administrator);
         }
 
-        Optional<Student> studentOptional = studentRepository.findByContact_EmailIgnoreCase(normalisedEmail);
-        if (studentOptional.isPresent()) {
-            Student student = studentOptional.get();
-            if (password.equals(student.getPassword())) {
-                return Optional.of(LoginResponse.successForStudent(student));
-            }
+        Landlord landlord = landLordRepository.findByContact_EmailIgnoreCase(normalisedEmail).orElse(null);
+        if (landlord != null && passwordMatches(password, landlord.getPassword())) {
+            loginRateLimiter.resetAttempts(normalisedEmail);
+            return LoginResponse.successForLandlord(landlord);
         }
 
-        return Optional.empty();
+        Student student = studentRepository.findByContact_EmailIgnoreCase(normalisedEmail).orElse(null);
+        if (student != null && passwordMatches(password, student.getPassword())) {
+            loginRateLimiter.resetAttempts(normalisedEmail);
+            return LoginResponse.successForStudent(student);
+        }
+
+        loginRateLimiter.recordFailedAttempt(normalisedEmail);
+        return LoginResponse.failure("Invalid email or password.");
     }
+
+    private boolean passwordMatches(String rawPassword, String encodedPassword) {
+        if (Helper.isNullorEmpty(encodedPassword)) {
+            return false;
+        }
+        if (encodedPassword.startsWith("$2a$") || encodedPassword.startsWith("$2b$") || encodedPassword.startsWith("$2y$")) {
+            return passwordEncoder.matches(rawPassword, encodedPassword);
+        }
+        return encodedPassword.equals(rawPassword);    }
 }

@@ -2,6 +2,7 @@ package co.za.cput.controller.users;
 
 import co.za.cput.dto.LoginRequest;
 import co.za.cput.dto.LoginResponse;
+import co.za.cput.service.users.TooManyLoginAttemptsException;
 import co.za.cput.service.users.implementation.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,10 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-
 @RestController
-@RequestMapping("/HouseConnect/auth")
+@RequestMapping("/api/auth")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
@@ -31,15 +30,19 @@ public class AuthenticationController {
         }
 
         try {
-            Optional<LoginResponse> loginResponse = authenticationService.login(
+            LoginResponse loginResponse = authenticationService.login(
                     loginRequest.getEmail(),
                     loginRequest.getPassword()
             );
 
-            return loginResponse
-                    .map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                            .body(LoginResponse.failure("Invalid email or password.")));
+            if (loginResponse.isAuthenticated()) {
+                return ResponseEntity.ok(loginResponse);
+            }
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(loginResponse);
+        } catch (TooManyLoginAttemptsException exception) {
+            return ResponseEntity.status(HttpStatus.LOCKED)
+                    .body(LoginResponse.failure(exception.getMessage()));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(LoginResponse.failure(exception.getMessage()));
         }

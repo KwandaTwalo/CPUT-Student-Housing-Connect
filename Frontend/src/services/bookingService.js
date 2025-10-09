@@ -126,7 +126,7 @@ const applyFilters = (bookings, filters = {}) => {
 };
 
 export const listBookings = async (filters = {}) => {
-    const response = await apiClient.get("/Booking/getAllBookings");
+    const response = await apiClient.get("/bookings/getAllBookings");
     const bookings = Array.isArray(response) ? response : [];
     return applyFilters(bookings, filters);
 };
@@ -136,7 +136,7 @@ export const fetchBooking = async (bookingId) => {
         throw new Error("Booking id is required");
     }
 
-    const response = await apiClient.get(`/Booking/read/${bookingId}`);
+    const response = await apiClient.get(`/bookings/read/${bookingId}`);
     if (!response) {
         throw new Error("Booking not found");
     }
@@ -149,7 +149,7 @@ export const updateBooking = async (bookingPayload) => {
         throw new Error("Booking id is required for updates");
     }
 
-    return apiClient.put("/Booking/update", bookingPayload);
+    return apiClient.put("/bookings/update", bookingPayload);
 };
 
 export const updateBookingStatus = async (booking, nextStatus) => {

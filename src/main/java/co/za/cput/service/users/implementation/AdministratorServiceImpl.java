@@ -1,6 +1,7 @@
 package co.za.cput.service.users.implementation;
 
 import co.za.cput.domain.business.Verification;
+import co.za.cput.domain.generic.Contact;
 import co.za.cput.domain.users.Administrator;
 import co.za.cput.domain.users.Landlord;
 import co.za.cput.repository.business.AccommodationRepository;
@@ -12,12 +13,14 @@ import co.za.cput.util.Helper;
 import co.za.cput.util.LinkingEntitiesHelper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Locale;
 
 @Service
 public class AdministratorServiceImpl implements IAdministratorService {
@@ -26,23 +29,27 @@ public class AdministratorServiceImpl implements IAdministratorService {
     private final LandLordRepository landLordRepository;
     private final AccommodationRepository accommodationRepository;
     private final VerificationRepository verificationRepository;
+    private final PasswordEncoder passwordEncoder;
+
 
     @Autowired
     public AdministratorServiceImpl(AdministratorRepository administratorRepository,
                                     LandLordRepository landLordRepository,
                                     AccommodationRepository accommodationRepository,
-                                    VerificationRepository verificationRepository) {
-        this.administratorRepository = administratorRepository;
+                                    VerificationRepository verificationRepository,
+                                    PasswordEncoder passwordEncoder) {        this.administratorRepository = administratorRepository;
         this.landLordRepository = landLordRepository;
         this.accommodationRepository = accommodationRepository;
         this.verificationRepository = verificationRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Administrator create(Administrator administrator) {
+        Administrator securedAdministrator = secureAdministrator(administrator);
         // First, prepare accommodation and landlord inside verifications
         Administrator preparedAdmin = LinkingEntitiesHelper.prepareAdministratorForSave(
-                administrator,
+                securedAdministrator,
                 accommodationRepository,
                 landLordRepository
         );
@@ -85,7 +92,8 @@ public class AdministratorServiceImpl implements IAdministratorService {
 
     @Override
     public Administrator update(Administrator administrator) {
-        return administratorRepository.saveAndFlush(administrator);
+        Administrator securedAdministrator = secureAdministrator(administrator);
+        return administratorRepository.saveAndFlush(securedAdministrator);
     }
 
     @Override
@@ -106,7 +114,7 @@ public class AdministratorServiceImpl implements IAdministratorService {
 
         return administratorRepository.findById(adminId)
                 .filter(admin -> admin.getAdminRoleStatus() == Administrator.AdminRoleStatus.ACTIVE)
-                .filter(admin -> adminPassword.equals(admin.getAdminPassword()))
+                .filter(admin -> passwordMatches(adminPassword, admin.getAdminPassword()))
                 .orElse(null);
     }
 
@@ -163,6 +171,61 @@ public class AdministratorServiceImpl implements IAdministratorService {
     @Override
     public void delete(Long Id) {
         administratorRepository.deleteById(Id);
+
+    }
+
+    private Administrator secureAdministrator(Administrator administrator) {
+        if (administrator == null) {
+            return null;
+        }
+
+        Contact contact = sanitiseContact(administrator.getContact());
+
+        return new Administrator.Builder()
+                .copy(administrator)
+                .setAdminName(normalise(administrator.getAdminName()))
+                .setAdminSurname(normalise(administrator.getAdminSurname()))
+                .setAdminPassword(hashPassword(administrator.getAdminPassword()))
+                .setContact(contact)
+                .build();
+    }
+
+    private Contact sanitiseContact(Contact contact) {
+        if (contact == null) {
+            return null;
+        }
+
+        return new Contact.Builder()
+                .copy(contact)
+                .setEmail(contact.getEmail() != null ? contact.getEmail().trim().toLowerCase(Locale.ROOT) : null)
+                .setPhoneNumber(normalise(contact.getPhoneNumber()))
+                .setAlternatePhoneNumber(normalise(contact.getAlternatePhoneNumber()))
+                .build();
+    }
+
+    private String hashPassword(String password) {
+        if (password == null || password.isBlank()) {
+            return password;
+        }
+        String trimmed = password.trim();
+        if (trimmed.startsWith("$2a$") || trimmed.startsWith("$2b$") || trimmed.startsWith("$2y$")) {
+            return trimmed;
+        }
+        return passwordEncoder.encode(trimmed);
+    }
+
+    private boolean passwordMatches(String rawPassword, String storedPassword) {
+        if (storedPassword == null || storedPassword.isBlank()) {
+            return false;
+        }
+        if (storedPassword.startsWith("$2a$") || storedPassword.startsWith("$2b$") || storedPassword.startsWith("$2y$")) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+        return storedPassword.equals(rawPassword);
+    }
+
+    private String normalise(String value) {
+        return value != null ? value.trim() : null;
 
     }
 }

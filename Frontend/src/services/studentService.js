@@ -5,7 +5,7 @@ export const createStudent = async (studentPayload) => {
         throw new Error("Student name and surname are required.");
     }
 
-    const response = await apiClient.post("/Student/create", studentPayload);
+    const response = await apiClient.post("/students/create", studentPayload);
     return response;
 };
 

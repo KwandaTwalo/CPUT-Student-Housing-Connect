@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/HouseConnect/admin/dashboard")
+@RequestMapping("/api/admin/dashboard")
 public class AdminDashboardController {
 
     private final AdminDashboardService adminDashboardService;

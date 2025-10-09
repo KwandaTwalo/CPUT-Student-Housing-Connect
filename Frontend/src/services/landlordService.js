@@ -5,7 +5,7 @@ export const createLandlord = async (landlordPayload) => {
         throw new Error("Landlord first and last names are required.");
     }
 
-    const response = await apiClient.post("/Landlord/create", landlordPayload);
+    const response = await apiClient.post("/landlords/create", landlordPayload);
     return response;
 };
 
@@ -14,7 +14,7 @@ export const fetchLandlord = async (landlordId) => {
         throw new Error("Landlord id is required");
     }
 
-    const response = await apiClient.get(`/Landlord/read/${landlordId}`);
+    const response = await apiClient.get(`/landlords/read/${landlordId}`);
     if (!response) {
         throw new Error("Landlord profile not found");
     }
@@ -27,7 +27,7 @@ export const updateLandlord = async (landlordPayload) => {
         throw new Error("Landlord id is required for updates");
     }
 
-    return apiClient.put("/Landlord/update", landlordPayload);
+    return apiClient.put("/landlords/update", landlordPayload);
 };
 
 const landlordService = {

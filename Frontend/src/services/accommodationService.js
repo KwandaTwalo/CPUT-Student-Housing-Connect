@@ -20,7 +20,7 @@ const normaliseFilters = (filters = {}) => {
 
 export const searchAccommodations = async (filters = {}) => {
     const query = normaliseFilters(filters);
-    const path = query ? `/Accommodation/search?${query}` : "/Accommodation/search";
+    const path = query ? `/accommodations/search?${query}` : "/accommodations/search";
     const response = await apiClient.get(path);
     return response ?? [];
 };
@@ -30,7 +30,7 @@ export const fetchAccommodation = async (id) => {
         throw new Error("Accommodation id is required");
     }
 
-    const response = await apiClient.get(`/Accommodation/read/${id}`);
+    const response = await apiClient.get(`/accommodations/read/${id}`);
     if (!response) {
         throw new Error("Accommodation not found");
     }
@@ -42,7 +42,7 @@ export const createAccommodation = async (accommodationPayload) => {
         throw new Error("Accommodation details are required");
     }
 
-    return apiClient.post("/Accommodation/create", accommodationPayload);
+    return apiClient.post("/accommodations/create", accommodationPayload);
 };
 
 export const updateAccommodation = async (accommodationPayload) => {
@@ -51,7 +51,7 @@ export const updateAccommodation = async (accommodationPayload) => {
         throw new Error("Accommodation id is required for updates");
     }
 
-    return apiClient.put("/Accommodation/update", accommodationPayload);
+    return apiClient.put("/accommodations/update", accommodationPayload);
 };
 
 export const fetchLandlordListings = async (landlordId, filters = {}) => {
