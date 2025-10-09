@@ -1,370 +1,335 @@
-import React, { useEffect, useState } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
-import { FaHome, FaList, FaPlusCircle, FaUsers, FaBuilding } from "react-icons/fa";
-import { logout } from "../../../services/authService";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import LandlordLayout from "../../../components/landlord/LandlordLayout";
+import { createAccommodation } from "../../../services/accommodationService";
+import { getCurrentUser } from "../../../services/authService";
 
 const initialForm = {
-  name: "",
-  rooms: "",
-  description: "",
+  rent: "",
+  distanceFromCampus: "",
+  roomType: "SINGLE",
+  bathroomType: "PRIVATE",
+  status: "AVAILABLE",
+  wifiAvailable: true,
+  furnished: false,
+  utilitiesIncluded: true,
+  streetNumber: "",
+  streetName: "",
+  suburb: "",
+  city: "",
+  postalCode: "",
+};
+
+const roomTypeOptions = [
+  { value: "SINGLE", label: "Single" },
+  { value: "DOUBLE", label: "Double" },
+  { value: "SHARED", label: "Shared" },
+  { value: "EN_SUITE", label: "En-suite" },
+];
+
+const bathroomTypeOptions = [
+  { value: "PRIVATE", label: "Private" },
+  { value: "SHARED", label: "Shared" },
+];
+
+const statusOptions = [
+  { value: "AVAILABLE", label: "Available" },
+  { value: "FULL", label: "Fully occupied" },
+];
+
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const toInteger = (value, fallback = null) => {
+  if (value === "" || value === null || value === undefined) {
+    return fallback;
+  }
+  const parsed = parseInt(value, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
 };
 
 export default function AddListing() {
   const navigate = useNavigate();
+  const currentUser = useMemo(() => getCurrentUser(), []);
   const [formData, setFormData] = useState(initialForm);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    return () => {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
-    };
-  }, [imagePreview]);
+    if (!currentUser || currentUser.role !== "landlord") {
+      navigate("/landlord/login", {
+        replace: true,
+        state: { message: "Please sign in as a landlord to create a listing." },
+      });
+    }
+  }, [currentUser, navigate]);
 
-  const handleChange = (event) => {
+  const handleFieldChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((previous) => ({ ...previous, [name]: value }));
   };
 
-  const handleImageChange = (event) => {
-    const file = event.target.files?.[0];
-    setSelectedImage(file || null);
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
-    } else {
-      setImagePreview(null);
-    }
+  const handleCheckboxChange = (event) => {
+    const { name, checked } = event.target;
+    setFormData((previous) => ({ ...previous, [name]: checked }));
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const summary = [
-      `Name: ${formData.name || "n/a"}`,
-      `Rooms: ${formData.rooms || "n/a"}`,
-      selectedImage ? `Image selected: ${selectedImage.name}` : "No image selected",
-    ].join("\n");
-    alert(`Listing saved (demo):\n${summary}`);
+  const buildPayload = () => {
+    const landlordId = currentUser?.userId;
+    if (!landlordId) {
+      throw new Error("Your landlord profile could not be resolved. Please sign in again.");
+    }
+
+    return {
+      rent: toNumber(formData.rent),
+      distanceFromCampus: toNumber(formData.distanceFromCampus),
+      roomType: formData.roomType,
+      bathroomType: formData.bathroomType,
+      accommodationStatus: formData.status,
+      wifiAvailable: Boolean(formData.wifiAvailable),
+      furnished: Boolean(formData.furnished),
+      utilitiesIncluded: Boolean(formData.utilitiesIncluded),
+      address: {
+        streetNumber: formData.streetNumber?.trim() || null,
+        streetName: formData.streetName?.trim() || null,
+        suburb: formData.suburb?.trim() || null,
+        city: formData.city?.trim() || null,
+        postalCode: toInteger(formData.postalCode),
+      },
+      landlord: {
+        landlordID: landlordId,
+      },
+    };
+  };
+
+  const resetForm = () => {
     setFormData(initialForm);
-    setSelectedImage(null);
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setFeedback(null);
+    setIsSubmitting(true);
+
+    try {
+      const payload = buildPayload();
+      const response = await createAccommodation(payload);
+      const listingId = response?.accommodationID ?? response?.id;
+
+      setFeedback({
+        type: "success",
+        message: `Listing ${listingId ? `#${listingId} ` : ""}created successfully.`,
+      });
+
+      setTimeout(() => {
+        resetForm();
+        navigate("/my-listings", { replace: true });
+      }, 1500);
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message: error.message || "We could not create the listing. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    setImagePreview(null);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });
-  };
   return (
-    <div className="dashboard-layout">
-          {/* Sidebar */}
-          <aside className="sidebar">
-            <div className="sidebar-profile">
-      <Link to="/landlord-profile" className="profile-link">
-      <p className="profile-role">Landlord</p>
-        <img
-          src="/profile-pic.jpg"
-          alt="Profile"
-          className="profile-img"
-        />
-        <span className="profile-name">John Doe</span>
-
-      </Link>
-    </div>
-
-        <nav>
-          <ul>
-            <li>
-              <NavLink to="/landlord/dashboard" end>
-                <FaHome /> Dashboard
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/my-listings" end>
-                <FaList /> My Listings
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/add-listing" end className="active-link">
-                <FaPlusCircle /> Add Listing
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/applications-requests" end>
-                <FaUsers /> Applications
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/assign-accommodation" end>
-                <FaBuilding /> Assign Accommodation
-              </NavLink>
-            </li>
-          </ul>
-        </nav>
-            <div className="sidebar-footer">
-              <button type="button" className="btn-logout" onClick={handleLogout}>
+      <LandlordLayout
+          title="Create a new listing"
+          description="Share the essentials about your accommodation to start receiving quality applications."
+          actions={(handleLogout) => (
+              <button type="button" className="btn-secondary" onClick={handleLogout}>
                 Sign out
               </button>
-            </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="main-content">
-        <header className="header">
-          <h1>Create New Listing</h1>
-          <button type="button" className="btn-secondary" onClick={handleLogout}>
-            Sign out
-          </button>
-        </header>
-
-        <div className="form-card">
-          <form className="listing-form" onSubmit={handleSubmit}>
-            <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Accommodation Name"
-                required
-            />
-            <input
-                type="number"
-                name="rooms"
-                value={formData.rooms}
-                onChange={handleChange}
-                placeholder="Number of Rooms"
-                min="0"
-            />
-            <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Description"
-            ></textarea>
-            <label className="file-picker">
-              <span>Listing image</span>
-              <input type="file" accept="image/*" onChange={handleImageChange} />
-            </label>
-            {imagePreview && (
-                <div className="image-preview">
-                  <img src={imagePreview} alt="Selected listing" />
+          )}
+      >
+        <section className="form-card light">
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="form-grid two-column">
+              <label className="form-field">
+                <span>Monthly rent (ZAR)</span>
+                <input
+                    type="number"
+                    name="rent"
+                    min="0"
+                    step="50"
+                    className="input"
+                    value={formData.rent}
+                    onChange={handleFieldChange}
+                    required
+                />
+              </label>
+              <label className="form-field">
+                <span>Distance from campus (km)</span>
+                <input
+                    type="number"
+                    name="distanceFromCampus"
+                    min="0"
+                    step="0.1"
+                    className="input"
+                    value={formData.distanceFromCampus}
+                    onChange={handleFieldChange}
+                    required
+                />
+              </label>
+              <label className="form-field">
+                <span>Room type</span>
+                <select
+                    name="roomType"
+                    className="select"
+                    value={formData.roomType}
+                    onChange={handleFieldChange}
+                    required
+                >
+                  {roomTypeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                <span>Bathroom type</span>
+                <select
+                    name="bathroomType"
+                    className="select"
+                    value={formData.bathroomType}
+                    onChange={handleFieldChange}
+                    required
+                >
+                  {bathroomTypeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                <span>Listing status</span>
+                <select
+                    name="status"
+                    className="select"
+                    value={formData.status}
+                    onChange={handleFieldChange}
+                    required
+                >
+                  {statusOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                  ))}
+                </select>
+              </label>
+              <div className="form-field">
+                <span>Amenities</span>
+                <div style={{ display: "grid", gap: 8 }}>
+                  <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input
+                        type="checkbox"
+                        name="wifiAvailable"
+                        checked={formData.wifiAvailable}
+                        onChange={handleCheckboxChange}
+                    />
+                    <span>Wi-Fi included</span>
+                  </label>
+                  <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input
+                        type="checkbox"
+                        name="furnished"
+                        checked={formData.furnished}
+                        onChange={handleCheckboxChange}
+                    />
+                    <span>Fully furnished</span>
+                  </label>
+                  <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input
+                        type="checkbox"
+                        name="utilitiesIncluded"
+                        checked={formData.utilitiesIncluded}
+                        onChange={handleCheckboxChange}
+                    />
+                    <span>Utilities included</span>
+                  </label>
                 </div>
-            )}
-            <button type="submit" className="btn-primary">
-              Save Listing
-            </button>
+              </div>
+            </div>
+
+            <div className="form-grid two-column">
+              <label className="form-field">
+                <span>Street number</span>
+                <input
+                    type="text"
+                    name="streetNumber"
+                    className="input"
+                    value={formData.streetNumber}
+                    onChange={handleFieldChange}
+                    placeholder="12A"
+                    required
+                />
+              </label>
+              <label className="form-field">
+                <span>Street name</span>
+                <input
+                    type="text"
+                    name="streetName"
+                    className="input"
+                    value={formData.streetName}
+                    onChange={handleFieldChange}
+                    placeholder="Durban Road"
+                    required
+                />
+              </label>
+              <label className="form-field">
+                <span>Suburb</span>
+                <input
+                    type="text"
+                    name="suburb"
+                    className="input"
+                    value={formData.suburb}
+                    onChange={handleFieldChange}
+                    placeholder="Bellville"
+                    required
+                />
+              </label>
+              <label className="form-field">
+                <span>City</span>
+                <input
+                    type="text"
+                    name="city"
+                    className="input"
+                    value={formData.city}
+                    onChange={handleFieldChange}
+                    placeholder="Cape Town"
+                    required
+                />
+              </label>
+              <label className="form-field">
+                <span>Postal code</span>
+                <input
+                    type="number"
+                    name="postalCode"
+                    className="input"
+                    value={formData.postalCode}
+                    onChange={handleFieldChange}
+                    placeholder="7530"
+                    required
+                />
+              </label>
+            </div>
+
+            {feedback && <div className={`alert ${feedback.type}`}>{feedback.message}</div>}
+
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                {isSubmitting ? "Saving listing..." : "Save listing"}
+              </button>
+            </div>
           </form>
-        </div>
-      </main>
-
-      {/* Styles */}
-      <style>{`
-        .dashboard-layout {
-          display: flex;
-          min-height: 100vh;
-          font-family: "Segoe UI", sans-serif;
-          background: #f5f7fb;
-        }
-
-        /* Sidebar */
-        .sidebar {
-          width: 260px;
-          background: linear-gradient(180deg, #003366, #0055aa);
-          color: white;
-          padding: 25px;
-          flex-shrink: 0;
-        }
-
-        .sidebar-profile {
-          text-align: center;
-          margin-bottom: 40px;
-        }
-
-        .profile-img {
-          width: 70px;
-          height: 70px;
-          border-radius: 50%;
-          margin-bottom: 10px;
-        }
-
-        .profile-name {
-          font-size: 18px;
-          color: #1485f7ff;
-          font-weight: bold;
-        }
-
-        .profile-role {
-  font-size: 20px; /* make it big */
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #1485f7ff; /* adjust to match your theme */
-}
-          .profile-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-  color: inherit; /* Keeps the white text */
-}
-
-
-        .sidebar nav ul {
-          list-style: none;
-          padding: 0;
-        }
-
-        .sidebar nav li {
-          margin: 20px 0;
-        }
-
-        .sidebar nav a {
-          color: #ddd;
-          text-decoration: none;
-          font-size: 15px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 10px;
-          border-radius: 8px;
-          transition: background 0.3s;
-        }
-
-        .sidebar nav a:hover,
-        .active-link {
-          background: #483ab0;
-          color: #fff !important;
-        }
-        
-        .sidebar-footer {
-          margin-top: 40px;
-        }
-
-        .btn-logout {
-          width: 100%;
-          padding: 10px 14px;
-          border: none;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.15);
-          color: #fff;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s ease;
-        }
-
-        .btn-logout:hover {
-          background: rgba(255,255,255,0.3);
-        }
-
-        /* Main Content */
-        .main-content {
-          flex: 1;
-          padding: 40px;
-        }
-
-        .header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 25px;
-        }
-        
-        .btn-secondary {
-          background: transparent;
-          color: #003366;
-          border: 1px solid #d0d7e2;
-          padding: 10px 18px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: 600;
-          transition: background 0.2s ease, color 0.2s ease;
-        }
-
-        .btn-secondary:hover {
-          background: #003366;
-          color: #fff;
-        }
-
-        /* Form Card */
-        .form-card {
-          background: white;
-          padding: 30px;
-          border-radius: 12px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-          max-width: 520px;
-        }
-
-        .listing-form {
-          display: flex;
-          flex-direction: column;
-          gap: 18px;
-        }
-
-        input,
-        textarea {
-          padding: 12px 14px;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          font-size: 15px;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        input:focus,
-        textarea:focus {
-          outline: none;
-          border-color: #483ab0;
-          box-shadow: 0 0 0 2px rgba(72,58,176,0.2);
-        }
-
-        textarea {
-          resize: none;
-          height: 100px;
-        }
-
-        .file-picker {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          font-weight: 500;
-        }
-
-        .file-picker input {
-          padding: 10px;
-        }
-
-        .image-preview {
-          border: 1px dashed #cbd5f5;
-          border-radius: 12px;
-          overflow: hidden;
-          max-height: 240px;
-        }
-
-        .image-preview img {
-          display: block;
-          width: 100%;
-          object-fit: cover;
-        }
-
-        .btn-primary {
-          background: #483ab0;
-          color: white;
-          padding: 12px 16px;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: 600;
-          transition: 0.2s;
-        }
-
-        .btn-primary:hover {
-          background: #372a8a;
-        }
-      `}</style>
-    </div>
+        </section>
+      </LandlordLayout>
   );
 }

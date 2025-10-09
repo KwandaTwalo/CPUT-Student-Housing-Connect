@@ -1,279 +1,113 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  FaHome,
-  FaList,
-  FaUser,
-  FaUsers,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaBuilding,
-} from "react-icons/fa";
-import { logout } from "../../services/authService";
+import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import LandlordLayout from "../../components/landlord/LandlordLayout";
+import { getCurrentUser } from "../../services/authService";
+import { fetchLandlord } from "../../services/landlordService";
+
+const resolveDisplayName = (landlord) =>
+    [landlord?.landlordFirstName, landlord?.landlordLastName].filter(Boolean).join(" ").trim();
 
 export default function LandlordProfilePage() {
   const navigate = useNavigate();
-  const [landlord] = useState({
-    landlordID: 1,
-    landlordFirstName: "John",
-    landlordLastName: "Doe",
-    isVerified: true,
-    dateRegistered: "2023-04-15",
-    password: "********",
-    profilePicture: "/profile-pic.jpg",
-  });
+  const currentUser = useMemo(() => getCurrentUser(), []);
+  const [landlord, setLandlord] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });  };
+  useEffect(() => {
+    if (!currentUser || currentUser.role !== "landlord") {
+      navigate("/landlord/login", {
+        replace: true,
+        state: { message: "Please sign in as a landlord to view your profile." },
+      });
+    }
+  }, [currentUser, navigate]);
+
+  useEffect(() => {
+    const loadLandlord = async () => {
+      if (!currentUser?.userId) {
+        return;
+      }
+
+      setIsLoading(true);
+      setError("");
+      try {
+        const data = await fetchLandlord(currentUser.userId);
+        setLandlord(data);
+      } catch (profileError) {
+        setError(profileError.message || "Unable to load your profile.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadLandlord();
+  }, [currentUser]);
+
+  const verified = landlord?.isVerified ?? landlord?.verified ?? false;
+  const contact = landlord?.contact;
 
   return (
-    <div className="landlord-profile-page">
-      {/* Sidebar can be reused from Dashboard if needed */}
-      <aside className="sidebar">
-      <div className="sidebar-profile">
-        <p className="profile-role">Landlord</p>
-      </div>
-      <nav>
-        <ul>
-          <li>
-            <Link to="/landlord/dashboard">
-              <FaHome style={{ marginRight: "8px" }} /> Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link to="/my-listings">
-              <FaList style={{ marginRight: "8px" }} /> My Listings
-            </Link>
-          </li>
-          <li>
-            <Link to="/applications-requests">
-              <FaUsers style={{ marginRight: "8px" }} /> Applications
-            </Link>
-          </li>
-          <li>
-            <Link to="/assign-accommodation">
-              <FaBuilding style={{ marginRight: "8px" }} /> Assign Accommodation
-            </Link>
-          </li>
-          <li>
-            <Link to="/landlord-profile">
-              <FaUser style={{ marginRight: "8px" }} /> Profile
-            </Link>
-          </li>
-        </ul>
-      </nav>
-        <div className="sidebar-footer">
-          <button type="button" className="btn-logout" onClick={handleLogout}>
-            Sign out
-          </button>
-        </div>
-    </aside>
+      <LandlordLayout
+          title="My profile"
+          description="Keep your details accurate so students and the housing office can reach you with ease."
+          actions={(handleLogout) => (
+              <button type="button" className="btn-secondary" onClick={handleLogout}>
+                Sign out
+              </button>
+          )}
+      >
+        <section className="profile-card" style={{ display: "grid", gap: 24 }}>
+          {error && <div className="alert error">{error}</div>}
 
-      {/* Main content */}
-      <main className="main-content">
-        <header className="header">
-          <h1>My Profile</h1>
-          <button type="button" className="btn-secondary" onClick={handleLogout}>
-            Sign out
-          </button>
-        </header>
+          {isLoading ? (
+              <p style={{ margin: 0 }}>Loading your profile...</p>
+          ) : !landlord ? (
+              <p style={{ margin: 0 }}>No profile information found.</p>
+          ) : (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+                  <div
+                      className="profile-avatar"
+                      aria-hidden="true"
+                      style={{ width: 96, height: 96, fontSize: 32, display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
+                    {resolveDisplayName(landlord)?.charAt(0)?.toUpperCase() || "L"}
+                  </div>
+                  <div>
+                    <h2 style={{ margin: "0 0 8px" }}>
+                      {resolveDisplayName(landlord) || "Landlord"}
+                      {verified ? (
+                          <FaCheckCircle className="verified-icon" style={{ marginLeft: 10, color: "#4ade80" }} />
+                      ) : (
+                          <FaTimesCircle className="unverified-icon" style={{ marginLeft: 10, color: "#f87171" }} />
+                      )}
+                    </h2>
+                    <p style={{ margin: 0, color: "rgba(226, 232, 240, 0.75)" }}>{contact?.email || "—"}</p>
+                    <p style={{ margin: "6px 0 0", color: "rgba(226, 232, 240, 0.75)" }}>{contact?.phoneNumber || "—"}</p>
+                  </div>
+                </div>
 
-        <section className="profile-details">
-          <div className="profile-card">
-            <img
-              src={landlord.profilePicture}
-              alt="Profile"
-              className="profile-img-large"
-            />
-            <h2>
-              {landlord.landlordFirstName} {landlord.landlordLastName}{" "}
-              {landlord.isVerified ? (
-                <FaCheckCircle className="verified-icon" />
-              ) : (
-                <FaTimesCircle className="unverified-icon" />
-              )}
-            </h2>
-            <p>
-              <strong>Landlord ID:</strong> {landlord.landlordID}
-            </p>
-            <p>
-              <strong>Date Registered:</strong> {landlord.dateRegistered}
-            </p>
-            <p>
-              <strong>Password:</strong> {landlord.password}
-            </p>
-            <Link to="/edit-profile">
-              <button className="btn-primary">Edit Profile</button>
-            </Link>
-          </div>
+                <dl>
+                  <dt>Landlord ID</dt>
+                  <dd>{landlord.landlordID ?? "—"}</dd>
+                  <dt>Date registered</dt>
+                  <dd>{landlord.dateRegistered ?? "—"}</dd>
+                  <dt>Verification status</dt>
+                  <dd>{verified ? "Verified" : "Pending verification"}</dd>
+                  <dt>Preferred contact</dt>
+                  <dd>{contact?.preferredContactMethod ?? "EMAIL"}</dd>
+                </dl>
+
+                <div>
+                  <Link to="/edit-profile" className="btn-primary">
+                    Edit profile
+                  </Link>
+                </div>
+              </>
+          )}
         </section>
-      </main>
-
-      {/* Styles */}
-      <style>{`
-        .landlord-profile-page {
-          display: flex;
-          min-height: 100vh;
-          font-family: "Segoe UI", sans-serif;
-          background: #f5f7fb;
-        }
-
-        .sidebar {
-          width: 260px;
-          background: linear-gradient(180deg, #003366, #0055aa);
-          color: white;
-          padding: 25px;
-        }
-
-        .sidebar-profile {
-          text-align: center;
-          margin-bottom: 40px;
-        }
-
-        .profile-img {
-          width: 70px;
-          height: 70px;
-          border-radius: 50%;
-          margin-bottom: 10px;
-        }
-
-        .profile-name {
-          font-size: 18px;
-          font-weight: bold;
-        }
-
-         .profile-role {
-  font-size: 20px; /* make it big */
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #1485f7ff; /* adjust to match your theme */
-}
-
-        .sidebar nav ul {
-          list-style: none;
-          padding: 0;
-        }
-
-        .sidebar nav li {
-          margin: 20px 0;
-        }
-
-        .sidebar nav a {
-          color: #ddd;
-          text-decoration: none;
-          font-size: 15px;
-          display: block;
-          padding: 10px;
-          border-radius: 8px;
-          transition: background 0.3s;
-        }
-
-        .sidebar nav a:hover {
-          background: #483ab0;
-          color: #fff;
-        }
-        
-        .sidebar-footer {
-          margin-top: 40px;
-        }
-
-        .btn-logout {
-          width: 100%;
-          padding: 10px 14px;
-          border: none;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.15);
-          color: #fff;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s ease;
-        }
-
-        .btn-logout:hover {
-          background: rgba(255,255,255,0.3);
-        }
-
-        .main-content {
-          flex: 1;
-          padding: 30px;
-        }
-
-        .header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 30px;
-        }
-        
-        .btn-secondary {
-          background: transparent;
-          color: #003366;
-          border: 1px solid #d0d7e2;
-          padding: 10px 18px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: 600;
-          transition: background 0.2s ease, color 0.2s ease;
-        }
-
-        .btn-secondary:hover {
-          background: #003366;
-          color: #fff;
-        }
-
-        .profile-details {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        .profile-card {
-          background: white;
-          border-radius: 15px;
-          padding: 30px;
-          text-align: center;
-          width: 400px;
-          box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-        }
-
-        .profile-img-large {
-          width: 120px;
-          height: 120px;
-          border-radius: 50%;
-          margin-bottom: 15px;
-        }
-
-        .verified-icon {
-          color: #27ae60;
-          margin-left: 8px;
-        }
-
-        .unverified-icon {
-          color: #e74c3c;
-          margin-left: 8px;
-        }
-
-        .btn-primary {
-          background: linear-gradient(135deg, #003366, #0055aa);
-          color: #ffffff
-          border: none;
-                    padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .btn-primary:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 10px 20px rgba(0, 85, 170, 0.2);
-        }
-
-        .btn-primary:active {
-          transform: translateY(0);        }
-      `}</style>
-    </div>
+      </LandlordLayout>
   );
 }

@@ -1,265 +1,244 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import LandlordLayout from "../../components/landlord/LandlordLayout";
+import { getCurrentUser } from "../../services/authService";
+import { fetchLandlord, updateLandlord } from "../../services/landlordService";
 
-const initialProfile = {
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "(+27) 71 234 5678",
-    bio: "Dedicated landlord providing comfortable student housing near campus.",
-    profilePicture: "/profile-pic.jpg",
+const preferredContactOptions = [
+    { value: "EMAIL", label: "Email" },
+    { value: "PHONE", label: "Mobile phone" },
+    { value: "ALTERNATE_PHONE", label: "Alternate phone" },
+];
+
+const emptyForm = {
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    alternatePhone: "",
+    preferredContactMethod: "EMAIL",
 };
 
+const resolveDisplayName = (profile) =>
+    [profile?.landlordFirstName, profile?.landlordLastName].filter(Boolean).join(" ").trim();
+
 export default function EditProfile() {
-    const [profile, setProfile] = useState(initialProfile);
-    const [previewImage, setPreviewImage] = useState(initialProfile.profilePicture);
-    const [selectedFile, setSelectedFile] = useState(null);
+    const navigate = useNavigate();
+    const currentUser = useMemo(() => getCurrentUser(), []);
+    const [form, setForm] = useState(emptyForm);
+    const [profile, setProfile] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [feedback, setFeedback] = useState(null);
 
     useEffect(() => {
-        return () => {
-            if (previewImage && previewImage !== initialProfile.profilePicture) {
-                URL.revokeObjectURL(previewImage);
+        if (!currentUser || currentUser.role !== "landlord") {
+            navigate("/landlord/login", {
+                replace: true,
+                state: { message: "Please sign in as a landlord to update your profile." },
+            });
+        }
+    }, [currentUser, navigate]);
+
+    const populateForm = useCallback((landlordProfile) => {
+        if (!landlordProfile) {
+            return;
+        }
+
+        setProfile(landlordProfile);
+        setForm({
+            firstName: landlordProfile.landlordFirstName ?? "",
+            lastName: landlordProfile.landlordLastName ?? "",
+            email: landlordProfile.contact?.email ?? "",
+            phone: landlordProfile.contact?.phoneNumber ?? "",
+            alternatePhone: landlordProfile.contact?.alternatePhoneNumber ?? "",
+            preferredContactMethod: landlordProfile.contact?.preferredContactMethod ?? "EMAIL",
+        });
+    }, []);
+
+    useEffect(() => {
+        const loadProfile = async () => {
+            if (!currentUser?.userId) {
+                return;
+            }
+
+            setIsLoading(true);
+            setFeedback(null);
+
+            try {
+                const landlordProfile = await fetchLandlord(currentUser.userId);
+                populateForm(landlordProfile);
+            } catch (error) {
+                setFeedback({ type: "error", message: error.message || "Unable to load your profile." });
+            } finally {
+                setIsLoading(false);
             }
         };
-    }, [previewImage]);
+
+        loadProfile();
+    }, [currentUser, populateForm]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-        setProfile((prevProfile) => ({
-            ...prevProfile,
-            [name]: value,
-        }));
+        setForm((previous) => ({ ...previous, [name]: value }));
     };
 
-    const handleImageChange = (event) => {
-        const file = event.target.files?.[0];
-        setSelectedFile(file || null);
-        if (previewImage && previewImage !== initialProfile.profilePicture) {
-            URL.revokeObjectURL(previewImage);
-        }
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setPreviewImage(url);
-        } else {
-            setPreviewImage(initialProfile.profilePicture);
-        }
-    };
-
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        const updatedFields = [
-            `First name: ${profile.firstName}`,
-            `Last name: ${profile.lastName}`,
-            selectedFile ? `Profile image: ${selectedFile.name}` : "Profile image unchanged",
-        ].join("\n");
-        alert(`Profile changes saved (demo state).\n${updatedFields}`);
+        if (!profile) {
+            return;
+        }
+
+        setIsSaving(true);
+        setFeedback(null);
+
+        try {
+            const payload = {
+                ...profile,
+                landlordFirstName: form.firstName.trim(),
+                landlordLastName: form.lastName.trim(),
+                contact: {
+                    ...(profile.contact ?? {}),
+                    email: form.email.trim(),
+                    phoneNumber: form.phone.trim() || null,
+                    alternatePhoneNumber: form.alternatePhone.trim() || null,
+                    preferredContactMethod: form.preferredContactMethod,
+                    isEmailVerified: profile.contact?.isEmailVerified ?? false,
+                    isPhoneVerified: profile.contact?.isPhoneVerified ?? false,
+                },
+            };
+
+            const updated = await updateLandlord(payload);
+            populateForm(updated);
+            setFeedback({ type: "success", message: "Your profile has been updated." });
+        } catch (error) {
+            setFeedback({ type: "error", message: error.message || "Unable to save changes." });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
-        <div className="edit-profile-page">
-            <div className="edit-profile-card">
-                <header>
-                    <h1>Edit Profile</h1>
-                    <p>Update your personal details to keep your profile accurate.</p>
+        <LandlordLayout
+            title="Edit profile"
+            description="Keep your contact details current so students and administrators can reach you without delay."
+            actions={(handleLogout) => (
+                <button type="button" className="btn-secondary" onClick={handleLogout}>
+                    Sign out
+                </button>
+            )}
+        >
+            <section className="surface-card light" style={{ display: "grid", gap: 24 }}>
+                <header className="auth-card-header" style={{ marginBottom: 0 }}>
+                    <h2 style={{ margin: 0, fontSize: 24 }}>Profile settings</h2>
+                    <p style={{ margin: "6px 0 0", color: "var(--color-slate-500)" }}>
+                        Update your personal details and preferred contact method. These details are shared with approved
+                        applicants.
+                    </p>
                 </header>
 
-                <form onSubmit={handleSubmit} className="edit-profile-form">
-                    <div className="image-field">
-                        <span>Profile picture</span>
-                        <div className="image-preview">
-                            <img src={previewImage} alt="Selected profile" />
+                {feedback && <div className={`alert ${feedback.type}`}>{feedback.message}</div>}
+
+                {isLoading ? (
+                    <p style={{ margin: 0 }}>Loading your information...</p>
+                ) : (
+                    <form className="auth-form" onSubmit={handleSubmit}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                            <div
+                                className="profile-avatar"
+                                aria-hidden="true"
+                                style={{ width: 96, height: 96, fontSize: 32, display: "flex", alignItems: "center", justifyContent: "center" }}
+                            >
+                                {resolveDisplayName(profile)?.charAt(0)?.toUpperCase() || "L"}
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0 }}>{resolveDisplayName(profile) || "Landlord"}</h3>
+                                <p style={{ margin: "4px 0 0", color: "var(--color-slate-500)" }}>
+                                    Member since {profile?.dateRegistered ?? "—"}
+                                </p>
+                            </div>
                         </div>
-                        <label className="upload-button">
-                            Choose image
-                            <input type="file" accept="image/*" onChange={handleImageChange} />
-                        </label>
-                    </div>
-                    <label className="form-field">
-                        <span>First name</span>
-                        <input
-                            type="text"
-                            name="firstName"
-                            value={profile.firstName}
-                            onChange={handleChange}
-                            required
-                        />
-                    </label>
 
-                    <label className="form-field">
-                        <span>Last name</span>
-                        <input
-                            type="text"
-                            name="lastName"
-                            value={profile.lastName}
-                            onChange={handleChange}
-                            required
-                        />
-                    </label>
+                        <div className="form-grid two-column">
+                            <label className="form-field">
+                                <span>First name</span>
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    className="input"
+                                    value={form.firstName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Last name</span>
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    className="input"
+                                    value={form.lastName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Email address</span>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    className="input"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Mobile number</span>
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    className="input"
+                                    value={form.phone}
+                                    onChange={handleChange}
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Alternate contact</span>
+                                <input
+                                    type="tel"
+                                    name="alternatePhone"
+                                    className="input"
+                                    value={form.alternatePhone}
+                                    onChange={handleChange}
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Preferred contact method</span>
+                                <select
+                                    name="preferredContactMethod"
+                                    className="select"
+                                    value={form.preferredContactMethod}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    {preferredContactOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        </div>
 
-                    <label className="form-field">
-                        <span>Email address</span>
-                        <input
-                            type="email"
-                            name="email"
-                            value={profile.email}
-                            onChange={handleChange}
-                            required
-                        />
-                    </label>
-
-                    <label className="form-field">
-                        <span>Phone number</span>
-                        <input
-                            type="tel"
-                            name="phone"
-                            value={profile.phone}
-                            onChange={handleChange}
-                        />
-                    </label>
-
-                    <label className="form-field">
-                        <span>Bio</span>
-                        <textarea
-                            name="bio"
-                            rows="4"
-                            value={profile.bio}
-                            onChange={handleChange}
-                        />
-                    </label>
-
-                    <div className="form-actions">
-                        <button type="submit" className="btn-primary">
-                            Save changes
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <style>{`
-        .edit-profile-page {
-          min-height: 100vh;
-          background: #f5f7fb;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 40px 20px;
-          font-family: "Segoe UI", sans-serif;
-        }
-
-        .edit-profile-card {
-          background: #ffffff;
-          padding: 40px;
-          border-radius: 16px;
-          width: min(600px, 100%);
-          box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
-        }
-
-        .edit-profile-card header h1 {
-          margin-bottom: 10px;
-          font-size: 28px;
-          color: #003366;
-        }
-
-        .edit-profile-card header p {
-          margin: 0 0 30px;
-          color: #5f6c7b;
-        }
-
-        .edit-profile-form {
-          display: grid;
-          gap: 20px;
-        }
-        
-        .image-field {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .image-preview {
-          width: 140px;
-          height: 140px;
-          border-radius: 50%;
-          overflow: hidden;
-          border: 3px solid #0055aa;
-        }
-
-        .image-preview img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .upload-button {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 10px 18px;
-          border-radius: 999px;
-          background: #003366;
-          color: #fff;
-          font-weight: 600;
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .upload-button input {
-          position: absolute;
-          inset: 0;
-          opacity: 0;
-          cursor: pointer;
-        }
-
-        .form-field {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          color: #2f3b4c;
-        }
-
-        .form-field input,
-        .form-field textarea {
-          padding: 12px 14px;
-          border-radius: 10px;
-          border: 1px solid #d0d7e2;
-          font-size: 15px;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .form-field input:focus,
-        .form-field textarea:focus {
-          outline: none;
-          border-color: #0055aa;
-          box-shadow: 0 0 0 3px rgba(0, 85, 170, 0.15);
-        }
-
-        .form-actions {
-          display: flex;
-          justify-content: flex-end;
-          margin-top: 10px;
-        }
-
-        .btn-primary {
-          background: linear-gradient(135deg, #003366, #0055aa);
-          color: #ffffff;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .btn-primary:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 10px 20px rgba(0, 85, 170, 0.2);
-        }
-
-        .btn-primary:active {
-          transform: translateY(0);
-        }
-      `}</style>
-        </div>
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                            <button type="submit" className="btn-primary" disabled={isSaving}>
+                                {isSaving ? "Saving..." : "Save changes"}
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </section>
+        </LandlordLayout>
     );
 }

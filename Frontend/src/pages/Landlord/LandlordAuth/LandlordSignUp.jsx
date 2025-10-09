@@ -1,155 +1,210 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { createLandlord } from "../../../services/landlordService";
 
+const initialForm = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  altPhone: "",
+  password: "",
+  company: "",
+  preferredContactMethod: "EMAIL",
+};
 
-export default function LandlordSignup() {
-  const [formData, setFormData] = useState({
-    name: "",
-    surname: "",
-    username: "",
-    password: "",
-  });
-  const [showPassword, setShowPassword] = useState(false);
+const preferredContactOptions = [
+  { value: "EMAIL", label: "Email" },
+  { value: "PHONE", label: "Mobile phone" },
+  { value: "ALTERNATE_PHONE", label: "Alternate phone" },
+];
 
+export default function LandlordSignUp() {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState(initialForm);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((previous) => ({ ...previous, [name]: value }));
   };
 
-  const handleSignup = (e) => {
-    e.preventDefault();
-    alert(`Account created for: ${formData.username}`);
-    navigate("/landlord/dashboard"); // redirect to dashboard
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setFeedback(null);
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        landlordFirstName: formData.firstName.trim(),
+        landlordLastName: formData.lastName.trim(),
+        verified: false,
+        dateRegistered: new Date().toISOString().slice(0, 10),
+        password: formData.password,
+        accommodationList: [],
+        contact: {
+          email: formData.email.trim(),
+          phoneNumber: formData.phone.trim() || null,
+          alternatePhoneNumber: formData.altPhone.trim() || null,
+          isEmailVerified: false,
+          isPhoneVerified: false,
+          preferredContactMethod: formData.preferredContactMethod,
+        },
+      };
+
+      const landlord = await createLandlord(payload);
+      setFeedback({
+        type: "success",
+        message: `Great news ${landlord?.landlordFirstName ?? formData.firstName}! Your profile is awaiting verification.`,
+      });
+
+      setTimeout(() => {
+        navigate("/landlord/login", {
+          replace: true,
+          state: { message: "Account created successfully. Please sign in." },
+        });
+      }, 1600);
+    } catch (error) {
+      setFeedback({ type: "error", message: error.message || "Unable to create the account." });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Landlord Sign Up</h2>
-        <form onSubmit={handleSignup} style={styles.form}>
-          <input
-            type="text"
-            name="name"
-            placeholder="First Name"
-            value={formData.name}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <input
-            type="text"
-            name="surname"
-            placeholder="Last Name"
-            value={formData.surname}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <div style={styles.passwordField}>
-            <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                style={{ ...styles.input, marginBottom: 0 }}
-                required
-            />
-            <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                style={styles.toggleButton}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          </div>
-          <button type="submit" style={styles.button}>
-            Sign Up
-          </button>
-        </form>
-        <p style={styles.linkText}>
-          Already have an account?{" "}
-           <Link to="/landlord/login" style={styles.link}>
-         Login
-        </Link>
-      </p>
+      <div className="auth-page gradient-light">
+        <div className="auth-shell" style={{ maxWidth: 820 }}>
+          <section className="auth-card light">
+            <div className="auth-card-header">
+              <h1>Landlord onboarding</h1>
+              <p>Join the verified community of landlords helping CPUT students find safe, modern accommodation.</p>
+            </div>
+
+            <form className="auth-form" onSubmit={handleSubmit}>
+              <div className="form-grid two-column">
+                <label className="form-field">
+                  <span>First name</span>
+                  <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="Sipho"
+                      required
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Last name</span>
+                  <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="Mbeki"
+                      required
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Business / company name</span>
+                  <input
+                      type="text"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="Optional"
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Email address</span>
+                  <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="landlord@housing.co.za"
+                      required
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Mobile number</span>
+                  <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="071 234 5678"
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Alternate contact</span>
+                  <input
+                      type="tel"
+                      name="altPhone"
+                      value={formData.altPhone}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="Optional"
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Preferred contact method</span>
+                  <select
+                      name="preferredContactMethod"
+                      className="select"
+                      value={formData.preferredContactMethod}
+                      onChange={handleChange}
+                  >
+                    {preferredContactOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <label className="form-field">
+                <span>Password</span>
+                <div className="password-field">
+                  <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="Create a secure password"
+                      minLength={8}
+                      required
+                  />
+                  <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowPassword((previous) => !previous)}
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </label>
+
+              {feedback && <div className={`alert ${feedback.type}`}>{feedback.message}</div>}
+
+              <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                {isSubmitting ? "Creating profile..." : "Create landlord account"}
+              </button>
+            </form>
+
+            <div className="helper-text" style={{ marginTop: 20 }}>
+              Already verified? <Link to="/landlord/login">Return to login</Link>
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
   );
 }
-
-const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    background: "linear-gradient(135deg, #f3f4f6, #e5e7eb)",
-  },
-  card: {
-    width: "350px",
-    padding: "30px",
-    borderRadius: "15px",
-    background: "#fff",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-    textAlign: "center",
-  },
-  title: {
-    marginBottom: "20px",
-    color: "#003366",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  input: {
-    padding: "12px",
-    margin: "8px 0",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
-  },
-  passwordField: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  toggleButton: {
-    padding: "12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    background: "#f1f5f9",
-    cursor: "pointer",
-    fontWeight: 600,
-  },
-  button: {
-    padding: "12px",
-    marginTop: "12px",
-    background: "#003366",
-    border: "none",
-    borderRadius: "8px",
-    color: "#fff",
-    fontSize: "16px",
-    cursor: "pointer",
-  },
-  linkText: {
-    marginTop: "15px",
-    fontSize: "14px",
-    color: "#003366",
-  },
-  link: {
-    color: "#0055aa",
-    fontWeight: "bold",
-    textDecoration: "none",
-  },
-};

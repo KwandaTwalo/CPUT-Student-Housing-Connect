@@ -1,168 +1,231 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { createStudent } from "../../../services/studentService";
 
 const initialForm = {
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
+    altPhone: "",
     password: "",
+    gender: "",
+    fundingStatus: "FUNDED",
+    dateOfBirth: "",
 };
+
+const fundingOptions = [
+    { value: "FUNDED", label: "NSFAS / bursary funded" },
+    { value: "SELF_FUNDED", label: "Self-funded" },
+    { value: "NOT_FUNDED", label: "Not yet funded" },
+];
 
 export default function StudentSignUp() {
     const navigate = useNavigate();
     const [form, setForm] = useState(initialForm);
     const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [feedback, setFeedback] = useState(null);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
+        setForm((previous) => ({ ...previous, [name]: value }));
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        alert(`Welcome ${form.firstName || "student"}! (demo account)`);
-        navigate("/student/login");
+        setFeedback(null);
+        setIsSubmitting(true);
+
+        try {
+            const payload = {
+                studentName: form.firstName.trim(),
+                studentSurname: form.lastName.trim(),
+                gender: form.gender || undefined,
+                password: form.password,
+                isStudentVerified: false,
+                fundingStatus: form.fundingStatus,
+                contact: {
+                    email: form.email.trim(),
+                    phoneNumber: form.phone.trim() || undefined,
+                    alternatePhoneNumber: form.altPhone.trim() || undefined,
+                    isEmailVerified: false,
+                    isPhoneVerified: false,
+                    preferredContactMethod: "EMAIL",
+                },
+            };
+
+            if (form.dateOfBirth) {
+                payload.dateOfBirth = form.dateOfBirth;
+            }
+
+            payload.registrationDate = new Date().toISOString().slice(0, 19);
+
+            const createdStudent = await createStudent(payload);
+            setFeedback({
+                type: "success",
+                message: `Welcome ${createdStudent?.studentName ?? form.firstName}! Your account has been created.`,
+            });
+
+            setTimeout(() => {
+                navigate("/student/login", {
+                    replace: true,
+                    state: { message: "Account created successfully. Please log in." },
+                });
+            }, 1600);
+        } catch (error) {
+            setFeedback({ type: "error", message: error.message || "Unable to create the account." });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                <h2 style={styles.title}>Student Sign Up</h2>
-                <p style={styles.subtitle}>Create an account to start finding accommodation.</p>
-                <form onSubmit={handleSubmit} style={styles.form}>
-                    <input
-                        type="text"
-                        name="firstName"
-                        placeholder="First name"
-                        value={form.firstName}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                    />
-                    <input
-                        type="text"
-                        name="lastName"
-                        placeholder="Last name"
-                        value={form.lastName}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                    />
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Email address"
-                        value={form.email}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                    />
-                    <div style={styles.passwordField}>
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            name="password"
-                            placeholder="Password"
-                            value={form.password}
-                            onChange={handleChange}
-                            style={{ ...styles.input, marginBottom: 0 }}
-                            required
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword((prev) => !prev)}
-                            style={styles.toggleButton}
-                        >
-                            {showPassword ? "Hide" : "Show"}
-                        </button>
+        <div className="auth-page gradient-light">
+            <div className="auth-shell" style={{ maxWidth: 880 }}>
+                <section className="auth-card light">
+                    <div className="auth-card-header">
+                        <h1>Student registration</h1>
+                        <p>Tell us a bit about yourself to unlock curated accommodation and tools built for CPUT students.</p>
                     </div>
+                    <form className="auth-form" onSubmit={handleSubmit}>
+                        <div className="form-grid two-column">
+                            <label className="form-field">
+                                <span>First name</span>
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    value={form.firstName}
+                                    onChange={handleChange}
+                                    className="input"
+                                    placeholder="Thando"
+                                    required
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Last name</span>
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    value={form.lastName}
+                                    onChange={handleChange}
+                                    className="input"
+                                    placeholder="Jacobs"
+                                    required
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Email address</span>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    className="input"
+                                    placeholder="student@cput.ac.za"
+                                    required
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Mobile number</span>
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    value={form.phone}
+                                    onChange={handleChange}
+                                    className="input"
+                                    placeholder="061 234 5678"
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Alternate contact</span>
+                                <input
+                                    type="tel"
+                                    name="altPhone"
+                                    value={form.altPhone}
+                                    onChange={handleChange}
+                                    className="input"
+                                    placeholder="Optional guardian contact"
+                                />
+                            </label>
+                            <label className="form-field">
+                                <span>Date of birth</span>
+                                <input
+                                    type="date"
+                                    name="dateOfBirth"
+                                    value={form.dateOfBirth}
+                                    onChange={handleChange}
+                                    className="input"
+                                />
+                            </label>
+                        </div>
 
-                    <button type="submit" style={styles.button}>
-                        Create Account
-                    </button>
-                </form>
-                <p style={styles.helper}>
-                    Already have an account? <Link to="/student/login" style={styles.link}>Login</Link>
-                </p>
+                        <div className="form-grid two-column">
+                            <label className="form-field">
+                                <span>Gender</span>
+                                <select
+                                    name="gender"
+                                    value={form.gender}
+                                    onChange={handleChange}
+                                    className="select"
+                                >
+                                    <option value="">Prefer not to say</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Non-binary">Non-binary</option>
+                                </select>
+                            </label>
+                            <label className="form-field">
+                                <span>Funding status</span>
+                                <select
+                                    name="fundingStatus"
+                                    value={form.fundingStatus}
+                                    onChange={handleChange}
+                                    className="select"
+                                    required
+                                >
+                                    {fundingOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        </div>
+
+                        <label className="form-field">
+                            <span>Password</span>
+                            <div className="password-field">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={form.password}
+                                    onChange={handleChange}
+                                    className="input"
+                                    placeholder="Create a secure password"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword((previous) => !previous)}
+                                >
+                                    {showPassword ? "Hide" : "Show"}
+                                </button>
+                            </div>
+                        </label>
+
+                        {feedback && <div className={`alert ${feedback.type}`}>{feedback.message}</div>}
+
+                        <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? "Creating account..." : "Create account"}
+                        </button>
+                    </form>
+                    <div className="helper-text" style={{ marginTop: 20 }}>
+                        Already have an account? <Link to="/student/login">Login</Link>
+                    </div>
+                </section>
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: {
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(135deg, #eff3ff 0%, #f8f9fb 100%)",
-        padding: "40px 16px",
-    },
-    card: {
-        width: "100%",
-        maxWidth: "420px",
-        backgroundColor: "#ffffff",
-        borderRadius: "16px",
-        boxShadow: "0 24px 60px rgba(15, 37, 64, 0.12)",
-        padding: "40px 36px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-    },
-    title: {
-        fontSize: "30px",
-        margin: 0,
-        color: "#0f2540",
-    },
-    subtitle: {
-        margin: 0,
-        color: "#53627c",
-    },
-    form: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "14px",
-    },
-    input: {
-        width: "100%",
-        padding: "12px 14px",
-        borderRadius: "10px",
-        border: "1px solid #d6ddec",
-        fontSize: "15px",
-        outline: "none",
-        transition: "border 0.2s ease, box-shadow 0.2s ease",
-    },
-    passwordField: {
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-    },
-    toggleButton: {
-        padding: "12px 14px",
-        borderRadius: "10px",
-        border: "1px solid #d6ddec",
-        background: "#f1f5f9",
-        cursor: "pointer",
-        fontWeight: 600,
-    },
-    button: {
-        marginTop: "6px",
-        padding: "12px 16px",
-        background: "#0f2540",
-        color: "#fff",
-        border: "none",
-        borderRadius: "10px",
-        fontSize: "16px",
-        cursor: "pointer",
-        fontWeight: 600,
-    },
-    helper: {
-        margin: 0,
-        textAlign: "center",
-        color: "#53627c",
-    },
-    link: {
-        color: "#0f2540",
-        fontWeight: 600,
-        textDecoration: "none",
-    },
-};

@@ -1,344 +1,224 @@
-import React, { useMemo, useState } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
-import { FaHome, FaList, FaPlusCircle, FaUsers, FaBuilding } from "react-icons/fa";
-import { logout } from "../../../services/authService";
-
-const initialApplications = [
-  {
-    id: 1,
-    student: "John Doe",
-    accommodation: "Student Residence A",
-    status: "pending",
-  },
-  {
-    id: 2,
-    student: "Jane Smith",
-    accommodation: "House B",
-    status: "approved",
-  },
-];
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import LandlordLayout from "../../../components/landlord/LandlordLayout";
+import { getCurrentUser } from "../../../services/authService";
+import { listBookings, updateBookingStatus } from "../../../services/bookingService";
 
 const statusConfig = {
-  pending: {
+  IN_PROGRESS: {
     badgeClass: "pending",
-    label: "Pending",
+    label: "In review",
     actionLabel: "Approve",
-    nextStatus: "approved",
+    nextStatus: "CONFIRMED",
   },
-  approved: {
+  CONFIRMED: {
     badgeClass: "approved",
     label: "Approved",
-    actionLabel: "Revoke",
-    nextStatus: "pending",
+    actionLabel: "Reopen",
+    nextStatus: "IN_PROGRESS",
   },
-  revoked: {
+  FAILED: {
     badgeClass: "revoked",
-    label: "Revoked",
-    actionLabel: "Approve",
-    nextStatus: "approved",
+    label: "Declined",
+    actionLabel: "Reopen",
+    nextStatus: "IN_PROGRESS",
   },
+};
+
+const statusFilters = [
+  { value: "ALL", label: "All" },
+  { value: "IN_PROGRESS", label: "In review" },
+  { value: "CONFIRMED", label: "Approved" },
+  { value: "FAILED", label: "Declined" },
+];
+
+const formatCurrency = (value) =>
+    new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 }).format(
+        Number(value ?? 0)
+    );
+
+const formatDate = (value) => {
+  if (!value) {
+    return "—";
+  }
+  try {
+    return new Date(value).toLocaleDateString();
+  } catch (error) {
+    return value;
+  }
 };
 
 export default function ApplicationRequests() {
   const navigate = useNavigate();
-  const [applications, setApplications] = useState(initialApplications);
+  const currentUser = useMemo(() => getCurrentUser(), []);
+  const [applications, setApplications] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
 
-  const handleStatusUpdate = (applicationId) => {
-    setApplications((prevApplications) =>
-        prevApplications.map((application) => {
-          if (application.id !== applicationId) {
-            return application;
-          }
+  useEffect(() => {
+    if (!currentUser || currentUser.role !== "landlord") {
+      navigate("/landlord/login", {
+        replace: true,
+        state: { message: "Please sign in as a landlord to review applications." },
+      });
+    }
+  }, [currentUser, navigate]);
 
-          const config = statusConfig[application.status] ?? statusConfig.pending;
-          return {
-            ...application,
-            status: config.nextStatus,
-          };
-        })
-    );
-  };
+  const loadApplications = useCallback(async () => {
+    if (!currentUser?.userId) {
+      return;
+    }
 
-  const applicationRows = useMemo(() => {
-    return applications.map((application) => {
-      const config = statusConfig[application.status] ?? statusConfig.pending;
+    setIsLoading(true);
+    setError("");
+    try {
+      const bookings = await listBookings({ landlordId: currentUser.userId });
+      setApplications(Array.isArray(bookings) ? bookings : []);
+    } catch (requestError) {
+      setError(requestError.message || "Unable to load applications at this time.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentUser]);
 
-      return (
-          <tr key={application.id}>
-            <td>{application.student}</td>
-            <td>{application.accommodation}</td>
-            <td>
-              <span className={`badge ${config.badgeClass}`}>{config.label}</span>
-            </td>
-            <td>
-              <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => handleStatusUpdate(application.id)}
-              >
-                {config.actionLabel}
-              </button>
-            </td>
-          </tr>
+  useEffect(() => {
+    loadApplications();
+  }, [loadApplications]);
+
+  const filteredApplications = useMemo(() => {
+    if (statusFilter === "ALL") {
+      return applications;
+    }
+    return applications.filter((application) => application.bookingStatus === statusFilter);
+  }, [applications, statusFilter]);
+
+  const handleStatusUpdate = async (application) => {
+    const config = statusConfig[application.bookingStatus] ?? statusConfig.IN_PROGRESS;
+    const nextStatus = config.nextStatus;
+
+    if (!nextStatus) {
+      return;
+    }
+
+    setUpdatingId(application.bookingID);
+    setError("");
+
+    try {
+      const updated = await updateBookingStatus(application, nextStatus);
+      setApplications((previous) =>
+          previous.map((item) =>
+              item.bookingID === updated.bookingID ? { ...item, bookingStatus: updated.bookingStatus } : item
+          )
       );
-    });
-  }, [applications]);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });
+    } catch (updateError) {
+      setError(updateError.message || "We could not update the application status.");
+    } finally {
+      setUpdatingId(null);
+    }
   };
+
   return (
-    <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-profile">
-  <Link to="/landlord-profile" className="profile-link">
-  <p className="profile-role">Landlord</p>
-    <img
-      src="/profile-pic.jpg"
-      alt="Profile"
-      className="profile-img"
-    />
-    <span className="profile-name">John Doe</span>
+      <LandlordLayout
+          title="Application requests"
+          description="Review booking requests, approve qualified students and keep your occupancy pipeline on track."
+          actions={(handleLogout) => (
+              <button type="button" className="btn-secondary" onClick={handleLogout}>
+                Sign out
+              </button>
+          )}
+      >
+        <section className="applications-card">
+          <header className="auth-card-header" style={{ marginBottom: 16 }}>
+            <h2 style={{ margin: 0, fontSize: 22 }}>Recent applications</h2>
+            <p style={{ margin: "4px 0 0", color: "var(--color-slate-500)" }}>
+              Manage all booking submissions linked to your listings.
+            </p>
+          </header>
 
-  </Link>
-</div>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
+            <label className="form-field" style={{ flex: "0 0 220px" }}>
+              <span>Filter by status</span>
+              <select
+                  className="select"
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value)}
+              >
+                {statusFilters.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                ))}
+              </select>
+            </label>
+            <button type="button" className="btn-secondary" onClick={loadApplications} disabled={isLoading}>
+              Refresh
+            </button>
+          </div>
 
-        <nav>
-          <ul>
-            <li>
-              <NavLink to="/landlord/dashboard" end>
-                <FaHome /> Dashboard
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/my-listings" end>
-                <FaList /> My Listings
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/add-listing" end>
-                <FaPlusCircle /> Add Listing
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/applications-requests" end className="active-link">
-                <FaUsers /> Applications
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/assign-accommodation" end>
-                <FaBuilding /> Assign Accommodation
-              </NavLink>
-            </li>
-          </ul>
-        </nav>
-        <div className="sidebar-footer">
-          <button type="button" className="btn-logout" onClick={handleLogout}>
-            Sign out
-          </button>
-        </div>
-      </aside>
+          {error && <div className="alert error">{error}</div>}
+          {isLoading ? (
+              <p style={{ margin: 0 }}>Loading applications...</p>
+          ) : filteredApplications.length === 0 ? (
+              <p style={{ margin: 0 }}>No applications found for the selected filters.</p>
+          ) : (
+              <table>
+                <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Requested listing</th>
+                  <th>Submitted</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th aria-label="Actions" />
+                </tr>
+                </thead>
+                <tbody>
+                {filteredApplications.map((application) => {
+                  const config = statusConfig[application.bookingStatus] ?? statusConfig.IN_PROGRESS;
+                  const studentName = [
+                    application.student?.studentName,
+                    application.student?.studentSurname,
+                  ]
+                      .filter(Boolean)
+                      .join(" ")
+                      .trim();
 
-      {/* Main Content */}
-      <main className="main-content">
-        <header className="header">
-          <h1>Applications</h1>
-        </header>
+                  const listingAddress = [
+                    application.accommodation?.address?.streetNumber,
+                    application.accommodation?.address?.streetName,
+                  ]
+                      .filter(Boolean)
+                      .join(" ")
+                      .trim();
 
-        <div className="applications-card">
-          <table>
-            <thead>
-              <tr>
-                <th>Student</th>
-                <th>Accommodation</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>{applicationRows}</tbody>
-          </table>
-        </div>
-      </main>
-
-      {/* Styles */}
-      <style>{`
-        .dashboard-layout {
-          display: flex;
-          min-height: 100vh;
-          font-family: "Segoe UI", sans-serif;
-          background: #f5f7fb;
-        }
-
-        /* Sidebar */
-        .sidebar {
-          width: 260px;
-          background: linear-gradient(180deg, #003366, #0055aa);
-          color: white;
-          padding: 25px;
-          flex-shrink: 0;
-        }
-
-        .sidebar-profile {
-          text-align: center;
-          margin-bottom: 40px;
-        }
-
-        .profile-img {
-          width: 70px;
-          height: 70px;
-          border-radius: 50%;
-          margin-bottom: 10px;
-        }
-
-        .profile-name {
-          font-size: 18px;
-          color: #1485f7ff;
-          font-weight: bold;
-        }
-
-        .profile-role {
-  font-size: 20px; /* make it big */
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #1485f7ff; /* adjust to match your theme */
-}
-          .profile-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-  color: inherit; /* Keeps the white text */
-}
-
-
-        .sidebar nav ul {
-          list-style: none;
-          padding: 0;
-        }
-
-        .sidebar nav li {
-          margin: 20px 0;
-        }
-
-        .sidebar nav a {
-          color: #ddd;
-          text-decoration: none;
-          font-size: 15px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 10px;
-          border-radius: 8px;
-          transition: background 0.3s;
-        }
-
-        .sidebar nav a:hover,
-        .active-link {
-          background: #483ab0;
-          color: #fff !important;
-        }
-        
-        .sidebar-footer {
-          margin-top: 40px;
-        }
-
-        .btn-logout {
-          width: 100%;
-          padding: 10px 14px;
-          border: none;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.15);
-          color: #fff;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s ease;
-        }
-
-        .btn-logout:hover {
-          background: rgba(255,255,255,0.3);
-        }
-
-        /* Main Content */
-        .main-content {
-          flex: 1;
-          padding: 40px;
-        }
-
-        .header h1 {
-          font-size: 26px;
-          margin-bottom: 25px;
-        }
-
-        /* Applications Card */
-        .applications-card {
-          background: white;
-          padding: 25px;
-          border-radius: 12px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        }
-
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        th, td {
-          padding: 14px;
-          text-align: left;
-          border-bottom: 1px solid #eee;
-        }
-
-        th {
-          background: #f9f9f9;
-          font-weight: 600;
-        }
-
-        tr:hover td {
-          background: #fafafa;
-        }
-
-        /* Badges */
-        .badge {
-          padding: 5px 10px;
-          border-radius: 6px;
-          font-size: 13px;
-          font-weight: 500;
-        }
-
-        .badge.pending {
-          background: #fff3cd;
-          color: #856404;
-        }
-
-        .badge.approved {
-          background: #d4edda;
-          color: #155724;
-        }
-
-        .badge.revoked {
-          background: #f8d7da;
-          color: #721c24;
-        }
-
-        /* Buttons */
-        .btn-primary {
-          background: #483ab0;
-          color: white;
-          padding: 8px 14px;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-          transition: 0.2s;
-        }
-
-        .btn-primary:hover {
-          background: #372a8a;
-        }
-      `}</style>
-    </div>
+                  return (
+                      <tr key={application.bookingID}>
+                        <td>{studentName || application.student?.contact?.email || "Unknown"}</td>
+                        <td>{listingAddress || application.accommodation?.address?.suburb || "—"}</td>
+                        <td>{formatDate(application.requestDate)}</td>
+                        <td>{formatCurrency(application.totalAmount)}</td>
+                        <td>
+                          <span className={`badge ${config.badgeClass}`}>{config.label}</span>
+                        </td>
+                        <td>
+                          <button
+                              type="button"
+                              className="btn-primary"
+                              onClick={() => handleStatusUpdate(application)}
+                              disabled={updatingId === application.bookingID}
+                          >
+                            {updatingId === application.bookingID ? "Updating..." : config.actionLabel}
+                          </button>
+                        </td>
+                      </tr>
+                  );
+                })}
+                </tbody>
+              </table>
+          )}
+        </section>
+      </LandlordLayout>
   );
 }
