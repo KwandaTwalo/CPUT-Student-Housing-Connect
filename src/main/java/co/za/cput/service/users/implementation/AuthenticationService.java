@@ -11,6 +11,7 @@ import co.za.cput.service.users.LoginRateLimiter;
 import co.za.cput.service.users.TooManyLoginAttemptsException;
 import co.za.cput.util.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -82,5 +83,6 @@ public class AuthenticationService {
         if (encodedPassword.startsWith("$2a$") || encodedPassword.startsWith("$2b$") || encodedPassword.startsWith("$2y$")) {
             return passwordEncoder.matches(rawPassword, encodedPassword);
         }
-        return encodedPassword.equals(rawPassword);    }
+        return encodedPassword.equals(rawPassword);
+    }
 }
