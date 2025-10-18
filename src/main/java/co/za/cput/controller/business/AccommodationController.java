@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/accommodations")
+@RequestMapping({"/api/accommodations", "/HouseConnect/Accommodation"})
 public class AccommodationController {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AccommodationController.class);

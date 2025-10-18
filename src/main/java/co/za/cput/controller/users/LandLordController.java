@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/landlords")
+@RequestMapping({"/api/landlords", "/HouseConnect/Landlord"})
 public class LandLordController {
 
     private final LandLordServiceImpl landLordService;

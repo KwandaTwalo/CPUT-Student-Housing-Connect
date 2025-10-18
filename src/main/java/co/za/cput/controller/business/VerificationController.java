@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/verifications")
+@RequestMapping({"/api/verifications", "/HouseConnect/Verification"})
 public class VerificationController {
 
     private VerificationServiceImpl verificationService;

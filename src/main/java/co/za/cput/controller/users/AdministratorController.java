@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admins")
+@RequestMapping({"/api/admins", "/HouseConnect/Administrator"})
 public class AdministratorController {
 
     private final AdministratorServiceImpl administratorService;
