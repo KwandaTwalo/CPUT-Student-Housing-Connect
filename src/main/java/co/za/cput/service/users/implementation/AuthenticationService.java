@@ -39,6 +39,18 @@ public class AuthenticationService {
         this.loginRateLimiter = loginRateLimiter;
     }
 
+    public boolean emailExists(String email) {
+        if (Helper.isNullorEmpty(email)) {
+            return false;
+        }
+
+        String normalisedEmail = email.trim().toLowerCase(Locale.ROOT);
+
+        return administratorRepository.findByContact_EmailIgnoreCase(normalisedEmail).isPresent()
+                || landLordRepository.findByContact_EmailIgnoreCase(normalisedEmail).isPresent()
+                || studentRepository.findByContact_EmailIgnoreCase(normalisedEmail).isPresent();
+    }
+
     public LoginResponse login(String email, String password) {
         if (Helper.isNullorEmpty(email) || Helper.isNullorEmpty(password)) {
             throw new IllegalArgumentException("Email and password are required");
