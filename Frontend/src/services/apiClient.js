@@ -32,16 +32,22 @@ const parseResponse = async (response) => {
         return null;
     }
 
+    const contentType = response.headers?.get("content-type") ?? "";
+
     const text = await response.text();
     if (!text) {
         return null;
     }
 
-    try {
-        return JSON.parse(text);
-    } catch (error) {
-        throw new Error("Received an unexpected response from the server.");
+    if (contentType.includes("application/json")) {
+        try {
+            return JSON.parse(text);
+        } catch (error) {
+            throw new Error("Received an unexpected response from the server.");
+        }
     }
+
+    return text;
 };
 
 const request = async (path, options = {}) => {
@@ -62,7 +68,10 @@ const request = async (path, options = {}) => {
 
         if (!response.ok) {
             const errorBody = await parseResponse(response);
-            const message = errorBody?.message || `Request failed with status ${response.status}`;
+            const message =
+                (typeof errorBody === "string" && errorBody.trim()) ||
+                errorBody?.message ||
+                `Request failed with status ${response.status}`;
             throw new Error(message);
         }
 
