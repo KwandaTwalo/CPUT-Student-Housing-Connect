@@ -1,8 +1,10 @@
 package co.za.cput.controller.business;
 
 import co.za.cput.domain.business.Accommodation;
+import co.za.cput.dto.AccommodationInsight;
 import co.za.cput.dto.AccommodationSearchCriteria;
 import co.za.cput.dto.AccommodationSummary;
+import co.za.cput.service.business.implementation.AccommodationInsightService;
 import co.za.cput.service.business.implementation.AccommodationServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +18,12 @@ public class AccommodationController {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AccommodationController.class);
 
     private final AccommodationServiceImpl accommodationService;
+    private final AccommodationInsightService accommodationInsightService;
 
-    public AccommodationController(AccommodationServiceImpl accommodationService) {
+    public AccommodationController(AccommodationServiceImpl accommodationService,
+                                   AccommodationInsightService accommodationInsightService) {
         this.accommodationService = accommodationService;
+        this.accommodationInsightService = accommodationInsightService;
     }
 
     @PostMapping("/create")
@@ -94,6 +99,25 @@ public class AccommodationController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/{accommodationID}/insights")
+    public ResponseEntity<AccommodationInsight> getInsights(@PathVariable("accommodationID") Long accommodationID) {
+        return accommodationInsightService.buildInsights(accommodationID)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/top-rated")
+    public ResponseEntity<List<AccommodationInsight>> getTopRated(
+            @RequestParam(value = "limit", required = false, defaultValue = "5") int limit
+    ) {
+        int sanitizedLimit = Math.max(1, Math.min(limit, 20));
+        List<AccommodationInsight> insights = accommodationInsightService.findTopRated(sanitizedLimit);
+        if (insights.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(insights);
     }
 
     @DeleteMapping("/delete/{accommodationID}")
