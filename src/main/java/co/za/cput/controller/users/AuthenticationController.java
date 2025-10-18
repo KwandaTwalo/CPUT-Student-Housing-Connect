@@ -26,7 +26,8 @@ public class AuthenticationController {
     private final StudentServiceImpl studentService;
 
     @Autowired
-    public AuthenticationController(AuthenticationService authenticationService) {
+    public AuthenticationController(AuthenticationService authenticationService,
+                                    StudentServiceImpl studentService) {
         this.authenticationService = authenticationService;
         this.studentService = studentService;
     }

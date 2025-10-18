@@ -1,9 +1,19 @@
 const inferDefaultBaseUrl = () => {
-    if (typeof window !== "undefined" && window?.location?.origin) {
-        return `${window.location.origin}/api`;
+    if (typeof window === "undefined" || !window?.location) {
+        return "http://localhost:8080/api";
     }
 
-    return "http://localhost:8080/api";
+    const { protocol, hostname, port, origin } = window.location;
+
+    // When the frontend runs via the development server (CRA defaults to port 3000),
+    // requests should target the Spring Boot backend on port 8080. Without this check
+    // the client tries to call http://localhost:3000/api which responds with the HTML
+    // for the React application instead of the JSON payloads expected by the app.
+    if (port === "3000") {
+        return `${protocol}//${hostname}:8080/api`;
+    }
+
+    return `${origin}/api`;
 };
 
 const normaliseBaseUrl = (url) => {
