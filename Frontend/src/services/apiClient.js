@@ -1,6 +1,20 @@
-const API_BASE_URL =
-    (process.env.REACT_APP_API_BASE_URL && process.env.REACT_APP_API_BASE_URL.replace(/\/$/, "")) ||
-    "http://localhost:8080/api";
+const inferDefaultBaseUrl = () => {
+    if (typeof window !== "undefined" && window?.location?.origin) {
+        return `${window.location.origin}/api`;
+    }
+
+    return "http://localhost:8080/api";
+};
+
+const normaliseBaseUrl = (url) => {
+    if (!url) {
+        return url;
+    }
+
+    return url.replace(/\/+$/, "");
+};
+
+const API_BASE_URL = normaliseBaseUrl(process.env.REACT_APP_API_BASE_URL) || normaliseBaseUrl(inferDefaultBaseUrl());
 
 const buildUrl = (path) => {
     if (!path.startsWith("/")) {
