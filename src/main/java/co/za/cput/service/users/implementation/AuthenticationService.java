@@ -46,9 +46,9 @@ public class AuthenticationService {
 
         String normalisedEmail = email.trim().toLowerCase(Locale.ROOT);
 
-        return administratorRepository.findByContact_EmailIgnoreCase(normalisedEmail).isPresent()
-                || landLordRepository.findByContact_EmailIgnoreCase(normalisedEmail).isPresent()
-                || studentRepository.findByContact_EmailIgnoreCase(normalisedEmail).isPresent();
+        return administratorRepository.existsByContact_EmailIgnoreCase(normalisedEmail)
+                || landLordRepository.existsByContact_EmailIgnoreCase(normalisedEmail)
+                || studentRepository.existsByContact_EmailIgnoreCase(normalisedEmail);
     }
 
     public LoginResponse login(String email, String password) {
@@ -66,19 +66,19 @@ public class AuthenticationService {
             );
         }
 
-        Administrator administrator = administratorRepository.findByContact_EmailIgnoreCase(normalisedEmail).orElse(null);
+        Administrator administrator = administratorRepository.findFirstByContact_EmailIgnoreCase(normalisedEmail).orElse(null);
         if (administrator != null && passwordMatches(password, administrator.getAdminPassword())) {
             loginRateLimiter.resetAttempts(normalisedEmail);
             return LoginResponse.successForAdministrator(administrator);
         }
 
-        Landlord landlord = landLordRepository.findByContact_EmailIgnoreCase(normalisedEmail).orElse(null);
+        Landlord landlord = landLordRepository.findFirstByContact_EmailIgnoreCase(normalisedEmail).orElse(null);
         if (landlord != null && passwordMatches(password, landlord.getPassword())) {
             loginRateLimiter.resetAttempts(normalisedEmail);
             return LoginResponse.successForLandlord(landlord);
         }
 
-        Student student = studentRepository.findByContact_EmailIgnoreCase(normalisedEmail).orElse(null);
+        Student student = studentRepository.findFirstByContact_EmailIgnoreCase(normalisedEmail).orElse(null);
         if (student != null && passwordMatches(password, student.getPassword())) {
             loginRateLimiter.resetAttempts(normalisedEmail);
             return LoginResponse.successForStudent(student);

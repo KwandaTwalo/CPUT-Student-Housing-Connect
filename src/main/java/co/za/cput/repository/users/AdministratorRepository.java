@@ -8,5 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface AdministratorRepository extends JpaRepository<Administrator, Long> {
-    Optional<Administrator> findByContact_EmailIgnoreCase(String email);
+    Optional<Administrator> findFirstByContact_EmailIgnoreCase(String email);
+
+    boolean existsByContact_EmailIgnoreCase(String email);
 }

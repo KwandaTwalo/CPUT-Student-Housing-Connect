@@ -4,6 +4,7 @@ import co.za.cput.domain.generic.Contact;
 import co.za.cput.domain.users.Student;
 import co.za.cput.repository.users.StudentRepository;
 import co.za.cput.service.users.IStudentService;
+import co.za.cput.util.Helper;
 import co.za.cput.util.LinkingEntitiesHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,21 @@ public class StudentServiceImpl implements IStudentService {
 
     @Override
     public Student create(Student student) {
+        if (student == null) {
+            throw new IllegalArgumentException("Student details are required.");
+        }
 
         Student securedStudent = secureStudent(student);
+        if (securedStudent == null) {
+            throw new IllegalArgumentException("Student details are required.");
+        }
+
+        Contact contact = securedStudent.getContact();
+        if (contact != null && !Helper.isNullorEmpty(contact.getEmail())) {
+            if (studentRepository.existsByContact_EmailIgnoreCase(contact.getEmail())) {
+                throw new IllegalArgumentException("A student with this email already exists.");
+            }
+        }
         // Step 1: Save the student without bookings to generate an ID
         Student studentWithoutBookings = new Student.Builder()
                 .copy(securedStudent)

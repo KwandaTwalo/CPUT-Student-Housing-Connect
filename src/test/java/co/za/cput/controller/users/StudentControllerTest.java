@@ -44,6 +44,7 @@ class StudentControllerTest {
     @Test
     void a_create() {
         ResponseEntity<Student> response = restTemplate.postForEntity(BASE_URL + "/create", student, Student.class);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         studentWithId = response.getBody();
         System.out.println("Created student: " + studentWithId);

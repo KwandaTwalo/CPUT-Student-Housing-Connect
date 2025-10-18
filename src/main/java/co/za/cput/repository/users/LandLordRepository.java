@@ -11,7 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface LandLordRepository extends JpaRepository<Landlord, Long> {
-    Optional<Landlord> findByContact_EmailIgnoreCase(String email);
+    Optional<Landlord> findFirstByContact_EmailIgnoreCase(String email);
 
+    boolean existsByContact_EmailIgnoreCase(String email);
     long countByIsVerifiedTrue();
 }
