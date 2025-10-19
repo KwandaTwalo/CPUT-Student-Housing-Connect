@@ -580,10 +580,9 @@ function Dashboard() {
                         </section>
                     </div>
                 </div>
+            </main>
         </div>
-</main>
-</div>
-);
+    );
 }
 
 const overviewGridStyles = {
