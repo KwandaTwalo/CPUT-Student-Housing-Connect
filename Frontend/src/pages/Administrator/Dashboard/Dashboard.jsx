@@ -15,7 +15,6 @@ import {
 import { fetchDashboardOverview } from "../../../services/adminService";
 import AdminNavigation from "../../../components/admin/AdminNavigation";
 
-
 const pageStyles = {
     minHeight: "100vh",
     background: "linear-gradient(180deg, #f6f8fc 0%, #e9eef9 100%)",
@@ -248,340 +247,342 @@ function Dashboard() {
             <AdminNavigation />
             <main className="admin-page-content" style={pageStyles}>
                 <div style={{ maxWidth: "1220px", margin: "0 auto", display: "grid", gap: "28px" }}>
-                <header
-                    style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        alignItems: "flex-start",
-                        justifyContent: "space-between",
-                        gap: "20px",
-                    }}
-                >
-                    <div>
-                        <div style={badgeStyles}>
-                            <FaShieldAlt size={14} />
-                            Admin Overview
-                        </div>
-                        <h1 style={{ fontSize: "34px", margin: "18px 0 8px", fontWeight: 700 }}>
-                            Operational health dashboard
-                        </h1>
-                        <p style={{ maxWidth: "560px", lineHeight: 1.65, color: "#475569" }}>
-                            Monitor verification throughput, stay ahead of escalations, and keep a pulse on platform activity
-                            across students, landlords and listings.
-                        </p>
-                    </div>
-                    <div style={{ ...cardStyles, width: "min(320px, 100%)", display: "grid", gap: "14px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                            <FaClipboardCheck size={28} color="#2563eb" />
-                            <div>
-                                <span style={{ color: "#94a3b8", fontSize: "13px" }}>Verification success rate</span>
-                                <h3 style={{ margin: 0, fontSize: "28px" }}>94.7%</h3>
-                            </div>
-                        </div>
-                        {renderProgressBar(94.7, "linear-gradient(135deg, #2563eb, #60a5fa)")}
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#64748b" }}>
-                            <span>Target: 92%</span>
-                            <span>+2.7 pts vs last month</span>
-                        </div>
-                        <button
-                            type="button"
-                            style={{
-                                marginTop: "6px",
-                                padding: "10px 14px",
-                                borderRadius: "12px",
-                                border: "1px solid rgba(37, 99, 235, 0.35)",
-                                background: "rgba(59, 130, 246, 0.08)",
-                                color: "#1d4ed8",
-                                fontWeight: 600,
-                                cursor: "pointer",
-                            }}
-                        >
-                            View verification rules
-                        </button>
-                    </div>
-                </header>
-
-                <section style={{ ...cardStyles, padding: "24px 28px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
-                        <div>
-                            <div style={badgeStyles}>Live platform stats</div>
-                            <h2 style={{ margin: "12px 0 4px", fontSize: "24px" }}>Current system overview</h2>
-                            <p style={{ margin: 0, color: "#475569" }}>{occupancyText}</p>
-                        </div>
-                        <div style={{ color: "#64748b", fontSize: "14px" }}>
-                            {overview?.generatedAt
-                                ? `Updated ${new Date(overview.generatedAt).toLocaleString()}`
-                                : isOverviewLoading
-                                    ? "Fetching metrics..."
-                                    : null}
-                        </div>
-                    </div>
-
-                    {overviewError && <div style={overviewErrorStyles}>{overviewError}</div>}
-
-                    {!overviewError && (
-                        <div style={overviewGridStyles}>
-                            {isOverviewLoading && overviewMetrics.length === 0 ? (
-                                <div style={loadingPillStyles}>Loading live metrics...</div>
-                            ) : (
-                                overviewMetrics.map((metric) => (
-                                    <div key={metric.label} style={overviewMetricStyles}>
-                                        <div>{metric.icon}</div>
-                                        <div style={{ fontSize: "28px", fontWeight: 700 }}>{metric.value}</div>
-                                        <div style={{ color: "#475569", fontSize: "14px" }}>{metric.label}</div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    )}
-                </section>
-
-                <section style={{ ...cardStyles, padding: "24px 28px" }}>
-                    <div
+                    <header
                         style={{
                             display: "flex",
                             flexWrap: "wrap",
+                            alignItems: "flex-start",
                             justifyContent: "space-between",
-                            alignItems: "center",
-                            gap: "16px",
+                            gap: "20px",
                         }}
                     >
                         <div>
-                            <h2 style={{ margin: "0 0 6px", fontSize: "22px" }}>{headline} at a glance</h2>
-                            <p style={{ margin: 0, color: "#64748b" }}>
-                                Consolidated performance indicators across registrations, verification and compliance.
+                            <div style={badgeStyles}>
+                                <FaShieldAlt size={14} />
+                                Admin Overview
+                            </div>
+                            <h1 style={{ fontSize: "34px", margin: "18px 0 8px", fontWeight: 700 }}>
+                                Operational health dashboard
+                            </h1>
+                            <p style={{ maxWidth: "560px", lineHeight: 1.65, color: "#475569" }}>
+                                Monitor verification throughput, stay ahead of escalations, and keep a pulse on platform activity
+                                across students, landlords and listings.
                             </p>
                         </div>
-                        <div
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "10px",
-                                padding: "10px 16px",
-                                borderRadius: "12px",
-                                background: "#f8fbff",
-                                border: "1px solid rgba(148, 163, 184, 0.3)",
-                            }}
-                        >
-                            <FaClock size={15} color="#64748b" />
-                            <select
-                                value={timeframe}
-                                onChange={(event) => setTimeframe(event.target.value)}
+                        <div style={{ ...cardStyles, width: "min(320px, 100%)", display: "grid", gap: "14px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                                <FaClipboardCheck size={28} color="#2563eb" />
+                                <div>
+                                    <span style={{ color: "#94a3b8", fontSize: "13px" }}>Verification success rate</span>
+                                    <h3 style={{ margin: 0, fontSize: "28px" }}>94.7%</h3>
+                                </div>
+                            </div>
+                            {renderProgressBar(94.7, "linear-gradient(135deg, #2563eb, #60a5fa)")}
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#64748b" }}>
+                                <span>Target: 92%</span>
+                                <span>+2.7 pts vs last month</span>
+                            </div>
+                            <button
+                                type="button"
                                 style={{
-                                    border: "none",
-                                    background: "transparent",
-                                    outline: "none",
-                                    fontSize: "15px",
-                                    color: "#0f172a",
+                                    marginTop: "6px",
+                                    padding: "10px 14px",
+                                    borderRadius: "12px",
+                                    border: "1px solid rgba(37, 99, 235, 0.35)",
+                                    background: "rgba(59, 130, 246, 0.08)",
+                                    color: "#1d4ed8",
                                     fontWeight: 600,
                                     cursor: "pointer",
                                 }}
                             >
-                                <option value="daily">Today</option>
-                                <option value="weekly">This week</option>
-                                <option value="monthly">This month</option>
-                            </select>
+                                View verification rules
+                            </button>
                         </div>
-                    </div>
+                    </header>
+
+                    <section style={{ ...cardStyles, padding: "24px 28px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
+                            <div>
+                                <div style={badgeStyles}>Live platform stats</div>
+                                <h2 style={{ margin: "12px 0 4px", fontSize: "24px" }}>Current system overview</h2>
+                                <p style={{ margin: 0, color: "#475569" }}>{occupancyText}</p>
+                            </div>
+                            <div style={{ color: "#64748b", fontSize: "14px" }}>
+                                {overview?.generatedAt
+                                    ? `Updated ${new Date(overview.generatedAt).toLocaleString()}`
+                                    : isOverviewLoading
+                                        ? "Fetching metrics..."
+                                        : null}
+                            </div>
+                        </div>
+
+                        {overviewError && <div style={overviewErrorStyles}>{overviewError}</div>}
+
+                        {!overviewError && (
+                            <div style={overviewGridStyles}>
+                                {isOverviewLoading && overviewMetrics.length === 0 ? (
+                                    <div style={loadingPillStyles}>Loading live metrics...</div>
+                                ) : (
+                                    overviewMetrics.map((metric) => (
+                                        <div key={metric.label} style={overviewMetricStyles}>
+                                            <div>{metric.icon}</div>
+                                            <div style={{ fontSize: "28px", fontWeight: 700 }}>{metric.value}</div>
+                                            <div style={{ color: "#475569", fontSize: "14px" }}>{metric.label}</div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
+                    </section>
+
+                    <section style={{ ...cardStyles, padding: "24px 28px" }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: "16px",
+                            }}
+                        >
+                            <div>
+                                <h2 style={{ margin: "0 0 6px", fontSize: "22px" }}>{headline} at a glance</h2>
+                                <p style={{ margin: 0, color: "#64748b" }}>
+                                    Consolidated performance indicators across registrations, verification and compliance.
+                                </p>
+                            </div>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                    padding: "10px 16px",
+                                    borderRadius: "12px",
+                                    background: "#f8fbff",
+                                    border: "1px solid rgba(148, 163, 184, 0.3)",
+                                }}
+                            >
+                                <FaClock size={15} color="#64748b" />
+                                <select
+                                    value={timeframe}
+                                    onChange={(event) => setTimeframe(event.target.value)}
+                                    style={{
+                                        border: "none",
+                                        background: "transparent",
+                                        outline: "none",
+                                        fontSize: "15px",
+                                        color: "#0f172a",
+                                        fontWeight: 600,
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    <option value="daily">Today</option>
+                                    <option value="weekly">This week</option>
+                                    <option value="monthly">This month</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                marginTop: "24px",
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                                gap: "18px",
+                            }}
+                        >
+                            {summary.map((item) => (
+                                <div
+                                    key={item.title}
+                                    style={{
+                                        border: "1px solid rgba(226, 232, 240, 0.8)",
+                                        borderRadius: "18px",
+                                        padding: "18px",
+                                        background: "linear-gradient(135deg, rgba(248, 250, 255, 0.85), rgba(229, 236, 255, 0.65))",
+                                        display: "grid",
+                                        gap: "12px",
+                                    }}
+                                >
+                                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                        <div
+                                            style={{
+                                                width: "44px",
+                                                height: "44px",
+                                                borderRadius: "50%",
+                                                display: "grid",
+                                                placeItems: "center",
+                                                background: "rgba(59, 130, 246, 0.08)",
+                                            }}
+                                        >
+                                            {item.icon}
+                                        </div>
+                                        <div>
+                                            <span style={{ fontSize: "13px", color: "#64748b" }}>{item.title}</span>
+                                            <h3 style={{ margin: "6px 0 0", fontSize: "24px" }}>{item.value}</h3>
+                                        </div>
+                                    </div>
+                                    <span
+                                        style={{
+                                            fontSize: "13px",
+                                            fontWeight: 600,
+                                            color: item.change.startsWith("-") ? "#dc2626" : "#16a34a",
+                                        }}
+                                    >
+                                        {item.change} vs previous {timeframe === "daily" ? "day" : timeframe === "weekly" ? "week" : "month"}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{ marginTop: "26px", display: "grid", gap: "12px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <FaChartLine size={18} color="#2563eb" />
+                                <strong style={{ fontSize: "16px" }}>Verification throughput trend</strong>
+                            </div>
+                            <div
+                                style={{
+                                    display: "grid",
+                                    gridTemplateColumns: `repeat(${trend.length}, minmax(0, 1fr))`,
+                                    gap: "16px",
+                                    alignItems: "end",
+                                    minHeight: "160px",
+                                }}
+                            >
+                                {trend.map((point) => (
+                                    <div key={point.label} style={{ display: "grid", gap: "12px", justifyItems: "center" }}>
+                                        <div
+                                            style={{
+                                                height: `${Math.max(point.total / (trend[trend.length - 1].total || 1), 0.08) * 140}px`,
+                                                width: "100%",
+                                                borderRadius: "16px 16px 12px 12px",
+                                                background: "linear-gradient(180deg, rgba(37, 99, 235, 0.85), rgba(96, 165, 250, 0.7))",
+                                                boxShadow: "0 16px 24px rgba(37, 99, 235, 0.25)",
+                                            }}
+                                        />
+                                        <span style={{ fontSize: "12px", color: "#64748b" }}>{point.label}</span>
+                                        <span style={{ fontSize: "13px", fontWeight: 600, color: "#1e293b" }}>{point.total}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
 
                     <div
                         style={{
-                            marginTop: "24px",
                             display: "grid",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                            gap: "18px",
+                            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                            gap: "24px",
                         }}
                     >
-                        {summary.map((item) => (
-                            <div
-                                key={item.title}
-                                style={{
-                                    border: "1px solid rgba(226, 232, 240, 0.8)",
-                                    borderRadius: "18px",
-                                    padding: "18px",
-                                    background: "linear-gradient(135deg, rgba(248, 250, 255, 0.85), rgba(229, 236, 255, 0.65))",
-                                    display: "grid",
-                                    gap: "12px",
-                                }}
-                            >
-                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <section style={cardStyles}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                                <h2 style={{ margin: 0, fontSize: "22px" }}>Verification queue</h2>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#64748b", fontSize: "13px" }}>
+                                    <FaSearch size={14} />
+                                    Smart triage enabled
+                                </div>
+                            </div>
+                            <div style={{ display: "grid", gap: "12px" }}>
+                                {verificationQueue.map((item) => (
                                     <div
+                                        key={item.id}
                                         style={{
-                                            width: "44px",
-                                            height: "44px",
-                                            borderRadius: "50%",
+                                            border: "1px solid rgba(226, 232, 240, 0.8)",
+                                            borderRadius: "16px",
+                                            padding: "16px",
                                             display: "grid",
-                                            placeItems: "center",
-                                            background: "rgba(59, 130, 246, 0.08)",
+                                            gap: "8px",
+                                            background: "linear-gradient(135deg, rgba(248, 250, 255, 0.85), rgba(229, 236, 255, 0.65))",
                                         }}
                                     >
-                                        {item.icon}
-                                    </div>
-                                    <div>
-                                        <span style={{ fontSize: "13px", color: "#64748b" }}>{item.title}</span>
-                                        <h3 style={{ margin: "6px 0 0", fontSize: "24px" }}>{item.value}</h3>
-                                    </div>
-                                </div>
-                                <span
-                                    style={{
-                                        fontSize: "13px",
-                                        fontWeight: 600,
-                                        color: item.change.startsWith("-") ? "#dc2626" : "#16a34a",
-                                    }}
-                                >
-                                    {item.change} vs previous {timeframe === "daily" ? "day" : timeframe === "weekly" ? "week" : "month"}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div style={{ marginTop: "26px", display: "grid", gap: "12px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                            <FaChartLine size={18} color="#2563eb" />
-                            <strong style={{ fontSize: "16px" }}>Verification throughput trend</strong>
-                        </div>
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns: `repeat(${trend.length}, minmax(0, 1fr))`,
-                                gap: "16px",
-                                alignItems: "end",
-                                minHeight: "160px",
-                            }}
-                        >
-                            {trend.map((point) => (
-                                <div key={point.label} style={{ display: "grid", gap: "12px", justifyItems: "center" }}>
-                                    <div
-                                        style={{
-                                            height: `${Math.max(point.total / (trend[trend.length - 1].total || 1), 0.08) * 140}px`,
-                                            width: "100%",
-                                            borderRadius: "16px 16px 12px 12px",
-                                            background: "linear-gradient(180deg, rgba(37, 99, 235, 0.85), rgba(96, 165, 250, 0.7))",
-                                            boxShadow: "0 16px 24px rgba(37, 99, 235, 0.25)",
-                                        }}
-                                    />
-                                    <span style={{ fontSize: "12px", color: "#64748b" }}>{point.label}</span>
-                                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#1e293b" }}>{point.total}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-                        gap: "24px",
-                    }}
-                >
-                    <section style={cardStyles}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                            <h2 style={{ margin: 0, fontSize: "22px" }}>Verification queue</h2>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#64748b", fontSize: "13px" }}>
-                                <FaSearch size={14} />
-                                Smart triage enabled
-                            </div>
-                        </div>
-                        <div style={{ display: "grid", gap: "12px" }}>
-                            {verificationQueue.map((item) => (
-                                <div
-                                    key={item.id}
-                                    style={{
-                                        border: "1px solid rgba(226, 232, 240, 0.8)",
-                                        borderRadius: "16px",
-                                        padding: "16px",
-                                        display: "grid",
-                                        gap: "8px",
-                                        background: "linear-gradient(135deg, rgba(248, 250, 255, 0.85), rgba(229, 236, 255, 0.65))",                                    }}
-                                >
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <strong style={{ fontSize: "15px" }}>{item.applicant}</strong>
-                                        <span
-                                            style={{
-                                                padding: "6px 12px",
-                                                borderRadius: "999px",
-                                                fontSize: "12px",
-                                                fontWeight: 600,
-
-                                                background: statusColors[item.status]?.bg,
-                                                color: statusColors[item.status]?.color,
-                                            }}
-                                        >
-                                            {item.status}
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                            <strong style={{ fontSize: "15px" }}>{item.applicant}</strong>
+                                            <span
+                                                style={{
+                                                    padding: "6px 12px",
+                                                    borderRadius: "999px",
+                                                    fontSize: "12px",
+                                                    fontWeight: 600,
+                                                    background: statusColors[item.status]?.bg,
+                                                    color: statusColors[item.status]?.color,
+                                                }}
+                                            >
+                                                {item.status}
                                             </span>
-                                    </div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: "13px" }}>
-                                        <span>{item.type}</span>
-                                        <span>{item.submitted}</span>
-                                    </div>
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
-                                            fontSize: "13px",
-                                            color: "#475569",
-                                        }}
-                                    >
-                                        <span>Risk: {item.riskScore}</span>
-                                        <button
-                                            type="button"
+                                        </div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: "13px" }}>
+                                            <span>{item.type}</span>
+                                            <span>{item.submitted}</span>
+                                        </div>
+                                        <div
                                             style={{
-                                                padding: "8px 12px",
-                                                borderRadius: "10px",
-                                                border: "1px solid rgba(37, 99, 235, 0.4)",
-                                                background: "rgba(59, 130, 246, 0.08)",
-                                                color: "#1d4ed8",
-                                                fontWeight: 600,
-                                                cursor: "pointer",
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                fontSize: "13px",
+                                                color: "#475569",
                                             }}
                                         >
-                                            Review dossier
-                                        </button>
+                                            <span>Risk: {item.riskScore}</span>
+                                            <button
+                                                type="button"
+                                                style={{
+                                                    padding: "8px 12px",
+                                                    borderRadius: "10px",
+                                                    border: "1px solid rgba(37, 99, 235, 0.4)",
+                                                    background: "rgba(59, 130, 246, 0.08)",
+                                                    color: "#1d4ed8",
+                                                    fontWeight: 600,
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                Review dossier
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+                                ))}
+                            </div>
+                        </section>
 
-                    <section style={{ ...cardStyles, display: "grid", gap: "20px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <h2 style={{ margin: 0, fontSize: "20px" }}>Activity feed</h2>
-                            <FaDatabase size={16} color="#94a3b8" />
-                        </div>
-                        <div style={{ display: "grid", gap: "16px" }}>
-                            {activityFeed.map((item) => (
-                                <div key={item.time} style={{ display: "grid", gap: "4px" }}>
-                                    <span style={{ fontSize: "12px", color: "#94a3b8" }}>{item.time}</span>
-                                    <div style={{ fontWeight: 600 }}>{item.actor}</div>
-                                    <div style={{ color: "#475569" }}>{item.action}</div>
-                                    <div style={{ fontSize: "13px", color: "#64748b" }}>{item.context}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    <section style={{ ...cardStyles, display: "grid", gap: "18px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <h2 style={{ margin: 0, fontSize: "20px" }}>Compliance coverage</h2>
-                            <FaUserShield size={18} color="#16a34a" />
-                        </div>
-                        <div style={{ display: "grid", gap: "14px" }}>
-                            {complianceAreas.map((area) => (
-                                <div key={area.name} style={{ display: "grid", gap: "6px" }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                                        <span>{area.name}</span>
-                                        <span>{area.completion}%</span>
+                        <section style={{ ...cardStyles, display: "grid", gap: "20px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <h2 style={{ margin: 0, fontSize: "20px" }}>Activity feed</h2>
+                                <FaDatabase size={16} color="#94a3b8" />
+                            </div>
+                            <div style={{ display: "grid", gap: "16px" }}>
+                                {activityFeed.map((item) => (
+                                    <div key={item.time} style={{ display: "grid", gap: "4px" }}>
+                                        <span style={{ fontSize: "12px", color: "#94a3b8" }}>{item.time}</span>
+                                        <div style={{ fontWeight: 600 }}>{item.actor}</div>
+                                        <div style={{ color: "#475569" }}>{item.action}</div>
+                                        <div style={{ fontSize: "13px", color: "#64748b" }}>{item.context}</div>
                                     </div>
-                                    {renderProgressBar(area.completion, "linear-gradient(135deg, #16a34a, #4ade80)")}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+                                ))}
+                            </div>
+                        </section>
+
+                        <section style={{ ...cardStyles, display: "grid", gap: "18px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <h2 style={{ margin: 0, fontSize: "20px" }}>Compliance coverage</h2>
+                                <FaUserShield size={18} color="#16a34a" />
+                            </div>
+                            <div style={{ display: "grid", gap: "14px" }}>
+                                {complianceAreas.map((area) => (
+                                    <div key={area.name} style={{ display: "grid", gap: "6px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                                            <span>{area.name}</span>
+                                            <span>{area.completion}%</span>
+                                        </div>
+                                        {renderProgressBar(area.completion, "linear-gradient(135deg, #16a34a, #4ade80)")}
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    </div>
                 </div>
-            </main>
         </div>
+</main>
+</div>
 );
 }
 
