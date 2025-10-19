@@ -307,7 +307,7 @@ function VerifyLandlords() {
                                 <strong style={{ display: "block", marginBottom: "4px" }}>
                                     {feedback.type === "success" ? "Decision recorded" : "Action needed"}
                                 </strong>
-                                <span style{{ color: "#475569" }}>{feedback.message}</span>
+                                <span style={{ color: "#475569" }}>{feedback.message}</span>
                             </div>
                         </div>
                     )}
