@@ -8,11 +8,11 @@ In the project directory, you can run:
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Runs the app in development mode on [http://localhost:3001](http://localhost:3001).\
+If you prefer a different port, set the `PORT` environment variable before invoking the script, for example `PORT=4000 npm start` on Unix systems or `set PORT=4000` followed by `npm start` on Windows.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+The page will reload when you make changes, and lint errors will appear in the console.
+
 
 ### `npm test`
 
