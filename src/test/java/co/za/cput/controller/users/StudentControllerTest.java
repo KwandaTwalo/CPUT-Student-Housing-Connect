@@ -35,7 +35,7 @@ class StudentControllerTest {
 
     private static final Student student = StudentFactory.createStudent(
             "Kwanda", "Twalo", LocalDate.of(2000, 5, 15),
-            "Male", "student123", LocalDateTime.now(),
+            "Male",  LocalDateTime.now(),
             true, Student.FundingStatus.FUNDED, contact, null
     );
 

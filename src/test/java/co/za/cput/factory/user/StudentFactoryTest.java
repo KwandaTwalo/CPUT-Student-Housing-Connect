@@ -27,7 +27,7 @@ class StudentFactoryTest {
             "Twalo",
             LocalDate.of(2000, 5, 15),
             "Male",
-            "student123",
+            //"student123",
             LocalDateTime.now(),
             true,
             Student.FundingStatus.FUNDED,
@@ -42,7 +42,7 @@ class StudentFactoryTest {
                 "Twalo",
                 LocalDate.of(2000, 5, 15), // valid DOB
                 "Male",
-                "student123",
+                //"student123",
                 LocalDateTime.now(), // valid registration date
                 true,
                 Student.FundingStatus.FUNDED,
@@ -60,7 +60,7 @@ class StudentFactoryTest {
                 "Student",
                 LocalDate.now().minusYears(15), // too young (invalid)
                 "Female",
-                "student123",
+                //"student123",
                 LocalDateTime.now(),
                 true,
                 Student.FundingStatus.NOT_FUNDED,
@@ -81,7 +81,7 @@ class StudentFactoryTest {
                 "Registrant",
                 LocalDate.of(2000, 5, 15),
                 "Male",
-                "student123",
+                //"student123",
                 futureDate,
                 true,
                 Student.FundingStatus.FUNDED,
@@ -93,16 +93,16 @@ class StudentFactoryTest {
         System.out.println("Student creation failed due to invalid registration date: " + student);
     }
 
-    @Test
+    /*@Test
     void testInvalidPassword() {
-        String invalidPassword = "abc"; // Too short, no digit
+        //String invalidPassword = "abc"; // Too short, no digit
 
         Student student = StudentFactory.createStudent(
                 "Invalid",
                 "Password",
                 LocalDate.of(2000, 1, 1),
                 "Non-Binary",
-                invalidPassword,
+                //invalidPassword,
                 LocalDateTime.now(),
                 true,
                 Student.FundingStatus.NOT_FUNDED,
@@ -112,5 +112,5 @@ class StudentFactoryTest {
 
         assertNull(student);
         System.out.println("Student should be null due to invalid password: " + student);
-    }
+    }*/
 }

@@ -23,14 +23,14 @@ public class Student {
     private String studentSurname;
     private LocalDate dateOfBirth;
     private String gender;
-    private String password;
+    //private String password;
     private LocalDateTime registrationDate;
     private boolean isStudentVerified;
 
     @Enumerated(EnumType.STRING)//this tells JPA that you must store the values as VARCHAR.
     private FundingStatus fundingStatus;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "contact_id", referencedColumnName = "contactID")
     private Contact contact;
 
@@ -55,7 +55,7 @@ public class Student {
         this.studentSurname = builder.studentSurname;
         this.dateOfBirth = builder.dateOfBirth;
         this.gender = builder.gender;
-        this.password = builder.password;
+        //this.password = builder.password;
         this.registrationDate = builder.registrationDate;
         this.isStudentVerified = builder.isStudentVerified;
         this.fundingStatus = builder.fundingStatus;
@@ -99,13 +99,9 @@ public class Student {
         return gender;
     }
 
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public String getPassword() {
+   /* public String getPassword() {
         return password;
-    }
+    }*/
 
     public void setPassword(String password) {
         this.password = password;
@@ -163,12 +159,12 @@ public class Student {
                 ", studentSurname='" + getStudentSurname() + '\n' +
                 ", dateOfBirth=" + getDateOfBirth() + '\n' +
                 ", gender='" + getGender() + '\'' +
-                ", password='" + getPassword() + '\n' +
+                //", password='" + getPassword() + '\n' +
                 ", registrationDate=" + getRegistrationDate() + '\n' +
                 ", isStudentVerified=" + getIsStudentVerified() + '\n' +
                 ", fundingStatus=" + getFundingStatus() + '\n' +
                 ", Contacts=" + getContact() + '\n' +
-                ", Bookings=" + getBookings() + '\n' +
+                //", Bookings=" + getBookings() + '\n' +
                 '}';
     }
 
@@ -178,7 +174,7 @@ public class Student {
         private String studentSurname;
         private LocalDate dateOfBirth;
         private String gender;
-        private String password;
+        //private String password;
         private LocalDateTime registrationDate;
         private boolean isStudentVerified;
         private FundingStatus fundingStatus;
@@ -210,10 +206,10 @@ public class Student {
             return this;
         }
 
-        public Builder setPassword(String password) {
+        /*public Builder setPassword(String password) {
             this.password = password;
             return this;
-        }
+        }*/
 
         public Builder setRegistrationDate(LocalDateTime registrationDate) {
             this.registrationDate = registrationDate;
@@ -246,7 +242,7 @@ public class Student {
             this.studentSurname = student.getStudentSurname();
             this.dateOfBirth = student.getDateOfBirth();
             this.gender = student.getGender();
-            this.password = student.getPassword();
+            //this.password = student.getPassword();
             this.registrationDate = student.getRegistrationDate();
             this.isStudentVerified = student.getIsStudentVerified();
             this.fundingStatus = student.getFundingStatus();

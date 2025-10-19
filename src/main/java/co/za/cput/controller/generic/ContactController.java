@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/api/contacts", "/HouseConnect/Contact"})
+@CrossOrigin(origins = "*")
+@RequestMapping("/Contact")
+
 public class ContactController {
 
     private ContactServiceImpl contactService;

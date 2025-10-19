@@ -5,7 +5,6 @@ package co.za.cput.domain.business;
 
 import co.za.cput.domain.users.Student;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 

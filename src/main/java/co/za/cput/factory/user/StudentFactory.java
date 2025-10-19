@@ -17,7 +17,7 @@ public class StudentFactory {
                                  String studentSurname,
                                  LocalDate studentDateOfBirth,
                                  String gender,
-                                 String password,
+                                 //String password,
                                  LocalDateTime registrationDate,
                                  boolean isStudentVerified,
                                  Student.FundingStatus fundingStatus,
@@ -28,7 +28,7 @@ public class StudentFactory {
                 Helper.isNullorEmpty(studentSurname) ||
                 !Helper.validateStudentDateOfBirth(studentDateOfBirth) ||
                 Helper.isNullorEmpty(gender) ||
-                !Helper.isValidPassword(password) ||
+                //!Helper.isValidPassword(password) ||
                 !Helper.isValidTimestamp(registrationDate)) {
             return null;
         }
@@ -38,7 +38,7 @@ public class StudentFactory {
                 .setStudentSurname(studentSurname)
                 .setDateOfBirth(studentDateOfBirth)
                 .setGender(gender)
-                .setPassword(password)
+                //.setPassword(password)
                 .setRegistrationDate(registrationDate)
                 .setIsStudentVerified(isStudentVerified)
                 .setFundingStatus(fundingStatus)

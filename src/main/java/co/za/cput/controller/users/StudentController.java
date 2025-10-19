@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping({"/api/students", "/HouseConnect/Student"})
+@CrossOrigin(origins = "*")
+@RequestMapping("/Student")
 public class StudentController {
 
     private final StudentServiceImpl studentService;

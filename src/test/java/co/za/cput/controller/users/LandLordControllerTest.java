@@ -36,7 +36,7 @@ class LandLordControllerTest {
 
     private static final Landlord landlord = LandlordFactory.createLandlord(
             "Kwanda", "Twalo", true,
-            LocalDate.of(2024, 12, 1), "ValidPass123", contact, null
+            LocalDate.of(2024, 12, 1),  contact, null
     );
 
     private static Landlord landlordWithId;
