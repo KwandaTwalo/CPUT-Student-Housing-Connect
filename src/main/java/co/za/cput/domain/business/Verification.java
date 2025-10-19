@@ -25,7 +25,7 @@ public class Verification {
     private VerificationStatus verificationStatus;
 
     public String getVerificationId() {
-        return verificationID.toString();
+        return verificationID != null ? verificationID.toString() : null;
     }
 
     public enum VerificationStatus {
@@ -60,32 +60,64 @@ public class Verification {
         return verificationID;
     }
 
+    public void setVerificationID(Long verificationID) {
+        this.verificationID = verificationID;
+    }
+
     public LocalDate getVerificationDate() {
         return verificationDate;
+    }
+
+    public void setVerificationDate(LocalDate verificationDate) {
+        this.verificationDate = verificationDate;
     }
 
     public String getNotes() {
         return notes;
     }
 
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
     public LocalDateTime getCreateAt() {
         return createAt;
+    }
+
+    public void setCreateAt(LocalDateTime createAt) {
+        this.createAt = createAt;
     }
 
     public LocalDateTime getUpdateAt() {
         return updateAt;
     }
 
+    public void setUpdateAt(LocalDateTime updateAt) {
+        this.updateAt = updateAt;
+    }
+
     public VerificationStatus getVerificationStatus() {
         return verificationStatus;
+    }
+
+    public void setVerificationStatus(VerificationStatus verificationStatus) {
+        this.verificationStatus = verificationStatus;
     }
 
     public Administrator getAdministrator() {
         return administrator;
     }
 
+    public void setAdministrator(Administrator administrator) {
+        this.administrator = administrator;
+    }
+
     public Accommodation getAccommodation() {
         return accommodation;
+    }
+
+    public void setAccommodation(Accommodation accommodation) {
+        this.accommodation = accommodation;
     }
 
     @Override

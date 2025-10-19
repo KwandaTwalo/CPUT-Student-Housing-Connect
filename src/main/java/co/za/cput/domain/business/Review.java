@@ -33,20 +33,40 @@ public class Review {
         return reviewID;
     }
 
+    public void setReviewID(Long reviewID) {
+        this.reviewID = reviewID;
+    }
+
     public int getRating() {
         return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 
     public String getComment() {
         return comment;
     }
 
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     public LocalDate getReviewDate() {
         return reviewDate;
     }
 
+    public void setReviewDate(LocalDate reviewDate) {
+        this.reviewDate = reviewDate;
+    }
+
     public Booking getBooking() {
         return booking;
+    }
+
+    public void setBooking(Booking booking) {
+        this.booking = booking;
     }
 
     @Override

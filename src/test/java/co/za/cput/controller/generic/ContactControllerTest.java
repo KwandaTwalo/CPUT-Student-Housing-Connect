@@ -30,7 +30,7 @@ class ContactControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private static final String BASE_URL = "http://localhost:8080/HouseConnect/Contact";
+    private static final String BASE_URL = "/HouseConnect/Contact";
 
     @Test
     void a_create() {

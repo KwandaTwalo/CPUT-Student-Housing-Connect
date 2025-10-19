@@ -23,7 +23,7 @@ public class VerificationServiceImpl implements IVerificationService {
 
     @Override
     public Verification create(Verification verification) {
-        return verificationRepository.save(verification);
+        return verificationRepository.saveAndFlush(verification);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class VerificationServiceImpl implements IVerificationService {
 
     @Override
     public Verification update(Verification verification) {
-        return verificationRepository.save(verification);
+        return verificationRepository.saveAndFlush(verification);
     }
 
     @Override

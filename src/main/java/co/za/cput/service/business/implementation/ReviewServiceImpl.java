@@ -27,7 +27,7 @@ public class ReviewServiceImpl implements IReviewService {
 
     @Override
     public Review create(Review review) {
-        return reviewRepository.save(review);
+        return reviewRepository.saveAndFlush(review);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ReviewServiceImpl implements IReviewService {
 
     @Override
     public Review update(Review review) {
-        return reviewRepository.save(review);
+        return reviewRepository.saveAndFlush(review);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class ReviewServiceImpl implements IReviewService {
                 .setBooking(booking)
                 .build();
 
-        return reviewRepository.save(reviewToSave);
+        return reviewRepository.saveAndFlush(reviewToSave);
     }
 
     @Override

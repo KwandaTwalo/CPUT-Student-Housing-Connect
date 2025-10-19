@@ -80,48 +80,96 @@ public class Booking {
         return bookingID;
     }
 
+    public void setBookingID(Long bookingID) {
+        this.bookingID = bookingID;
+    }
+
     public LocalDate getRequestDate() {
         return requestDate;
+    }
+
+    public void setRequestDate(LocalDate requestDate) {
+        this.requestDate = requestDate;
     }
 
     public LocalDate getCheckInDate() {
         return checkInDate;
     }
 
+    public void setCheckInDate(LocalDate checkInDate) {
+        this.checkInDate = checkInDate;
+    }
+
     public LocalDate getCheckOutDate() {
         return checkOutDate;
+    }
+
+    public void setCheckOutDate(LocalDate checkOutDate) {
+        this.checkOutDate = checkOutDate;
     }
 
     public double getTotalAmount() {
         return totalAmount;
     }
 
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public PaymentStatus getPaymentStatus() {
         return paymentStatus;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 
     public BookingStatus getBookingStatus() {
         return bookingStatus;
     }
 
+    public void setBookingStatus(BookingStatus bookingStatus) {
+        this.bookingStatus = bookingStatus;
+    }
+
     public Student getStudent() {
         return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
     }
 
     public Accommodation getAccommodation() {
         return accommodation;
     }
 
+    public void setAccommodation(Accommodation accommodation) {
+        this.accommodation = accommodation;
+    }
+
     public Review getReview() {
         return review;
+    }
+
+    public void setReview(Review review) {
+        this.review = review;
     }
 
     @Override

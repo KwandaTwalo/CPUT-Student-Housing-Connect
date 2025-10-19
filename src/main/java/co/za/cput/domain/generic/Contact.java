@@ -49,28 +49,56 @@ public class Contact {
         return contactID;
     }
 
+    public void setContactID(Long contactID) {
+        this.contactID = contactID;
+    }
+
     public String getEmail() {
         return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
     public String getAlternatePhoneNumber() {
         return alternatePhoneNumber;
+    }
+
+    public void setAlternatePhoneNumber(String alternatePhoneNumber) {
+        this.alternatePhoneNumber = alternatePhoneNumber;
     }
 
     public boolean isEmailVerified() {
         return isEmailVerified;
     }
 
+    public void setEmailVerified(boolean emailVerified) {
+        isEmailVerified = emailVerified;
+    }
+
     public boolean isPhoneVerified() {
         return isPhoneVerified;
     }
 
+    public void setPhoneVerified(boolean phoneVerified) {
+        isPhoneVerified = phoneVerified;
+    }
+
     public PreferredContactMethod getPreferredContactMethod() {
         return preferredContactMethod;
+    }
+
+    public void setPreferredContactMethod(PreferredContactMethod preferredContactMethod) {
+        this.preferredContactMethod = preferredContactMethod;
     }
 
     @Override

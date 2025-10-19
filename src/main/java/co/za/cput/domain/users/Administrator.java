@@ -45,7 +45,7 @@ public class Administrator {
         this.adminPassword = builder.adminPassword;
         this.adminRoleStatus = builder.adminRoleStatus;
         this.contact = builder.contact;
-        this.verifications = builder.verifications;
+        this.verifications = builder.verifications != null ? builder.verifications : new ArrayList<>();
     }
 
 
@@ -53,28 +53,56 @@ public class Administrator {
         return adminID;
     }
 
+    public void setAdminID(Long adminID) {
+        this.adminID = adminID;
+    }
+
     public String getAdminName() {
         return adminName;
+    }
+
+    public void setAdminName(String adminName) {
+        this.adminName = adminName;
     }
 
     public String getAdminSurname() {
         return adminSurname;
     }
 
+    public void setAdminSurname(String adminSurname) {
+        this.adminSurname = adminSurname;
+    }
+
     public String getAdminPassword() {
         return adminPassword;
+    }
+
+    public void setAdminPassword(String adminPassword) {
+        this.adminPassword = adminPassword;
     }
 
     public AdminRoleStatus getAdminRoleStatus() {
         return adminRoleStatus;
     }
 
+    public void setAdminRoleStatus(AdminRoleStatus adminRoleStatus) {
+        this.adminRoleStatus = adminRoleStatus;
+    }
+
     public Contact getContact() {
         return contact;
     }
 
+    public void setContact(Contact contact) {
+        this.contact = contact;
+    }
+
     public List<Verification> getVerifications() {
         return verifications;
+    }
+
+    public void setVerifications(List<Verification> verifications) {
+        this.verifications = verifications != null ? verifications : new ArrayList<>();
     }
 
     @Override
@@ -148,10 +176,10 @@ public class Administrator {
 
 /*{
         "adminName": "Simphiwwe",
-        "adminSurname": "Thwabuse",
-        "adminPassword": "secureAdminPass456",
-        "adminRoleStatus": "ACTIVE",
-        "contact": {
+    "adminSurname": "Thwabuse",
+    "adminPassword": "secureAdminPass456",
+    "adminRoleStatus": "ACTIVE",
+    "contact": {
         "email": "thabo.nkosi@adminportal.com",
         "phoneNumber": "0740001122",
         "alternatePhoneNumber": "0731112233",
@@ -159,46 +187,46 @@ public class Administrator {
         "isPhoneVerified": true,
         "preferredContactMethod": "EMAIL"
         },
-        "verifications": [
+    "verifications": [
         {
         "verificationDate": "2025-08-01",
-        "notes": "Verified based on submitted lease agreement and utility bill.",
-        "createAt": "2025-07-30T10:00:00",
-        "updateAt": "2025-08-01T14:30:00",
-        "verificationStatus": "APPROVED",
-        "accommodation": {
-        "rent": 2800.00,
-        "wifiAvailable": true,
-        "furnished": false,
-        "distanceFromCampus": 2.5,
-        "utilitiesIncluded": false,
-        "roomType": "DOUBLE",
-        "bathroomType": "SHARED",
-        "accommodationStatus": "AVAILABLE",
-        "address": {
-        "streetNumber": "45B",
-        "streetName": "Boundary Road",
-        "suburb": "Observatory",
-        "city": "Cape Town",
-        "postalCode": 7925
-        },
-        "landlord": {
-        "landlordFirstName": "Nomsa",
-        "landlordLastName": "Zulu",
-        "isVerified": true,
-        "dateRegistered": "2024-12-10",
-        "password": "nomsaLandlordPass2024",
-        "contact": {
-        "email": "nomsa.zulu@landlords.co.za",
-        "phoneNumber": "0765432198",
-        "alternatePhoneNumber": "0743219876",
-        "isEmailVerified": true,
-        "isPhoneVerified": false,
-        "preferredContactMethod": "PHONE"
+            "notes": "Verified based on submitted lease agreement and utility bill.",
+            "createAt": "2025-07-30T10:00:00",
+            "updateAt": "2025-08-01T14:30:00",
+            "verificationStatus": "APPROVED",
+            "accommodation": {
+                "rent": 2800.00,
+                "wifiAvailable": true,
+                "furnished": false,
+                "distanceFromCampus": 2.5,
+                "utilitiesIncluded": false,
+                "roomType": "DOUBLE",
+                "bathroomType": "SHARED",
+                "accommodationStatus": "AVAILABLE",
+                "address": {
+                    "streetNumber": "45B",
+                    "streetName": "Boundary Road",
+                    "suburb": "Observatory",
+                    "city": "Cape Town",
+                    "postalCode": 7925
+                },
+                "landlord": {
+                    "landlordFirstName": "Nomsa",
+                    "landlordLastName": "Zulu",
+                    "isVerified": true,
+                    "dateRegistered": "2024-12-10",
+                    "password": "nomsaLandlordPass2024",
+                    "contact": {
+                        "email": "nomsa.zulu@landlords.co.za",
+                        "phoneNumber": "0765432198",
+                        "alternatePhoneNumber": "0743219876",
+                        "isEmailVerified": true,
+                        "isPhoneVerified": false,
+                        "preferredContactMethod": "PHONE"
+                    }
+                }
+            }
         }
-        }
-        }
-        }
-        ]
-        }*/
-
+    ]
+}
+*/
