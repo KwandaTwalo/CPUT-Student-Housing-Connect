@@ -26,3 +26,5 @@ dist/
 .vite/
 *.log
 .env*
+!.env
+
