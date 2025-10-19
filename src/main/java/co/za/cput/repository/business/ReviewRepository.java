@@ -1,3 +1,5 @@
+package co.za.cput.repository.business;
+
 import co.za.cput.domain.business.Review;
 import co.za.cput.dto.AccommodationRatingSummary;
 import org.springframework.data.domain.Pageable;
