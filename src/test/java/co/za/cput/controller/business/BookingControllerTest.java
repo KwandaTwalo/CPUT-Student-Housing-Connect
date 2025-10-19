@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class BookingControllerTest {
 
-    private static final String BASE_URL = "http://localhost:8080/HouseConnect/Booking";
+    private static final String BASE_URL = "/HouseConnect/Booking";
 
     private Booking booking1 = BookingFactory.createBooking(
             LocalDate.of(2025, 5, 15),

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/Review")
+@RequestMapping({"/api/reviews", "/HouseConnect/Review"})
 public class ReviewController {
 
     private ReviewServiceImpl reviewService;

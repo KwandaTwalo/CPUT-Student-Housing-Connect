@@ -20,7 +20,7 @@ public class AddressServiceImpl implements IAddressService {
 
     @Override
     public Address create(Address address) {
-        return addressRepository.save(address);
+        return addressRepository.saveAndFlush(address);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class AddressServiceImpl implements IAddressService {
 
     @Override
     public Address update(Address address) {
-        return addressRepository.save(address);
+        return addressRepository.saveAndFlush(address);
     }
 
     @Override

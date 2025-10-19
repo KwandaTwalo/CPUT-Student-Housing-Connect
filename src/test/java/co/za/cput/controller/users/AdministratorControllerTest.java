@@ -24,7 +24,7 @@ class AdministratorControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private static final String BASE_URL = "http://localhost:8080/HouseConnect/Administrator";
+    private static final String BASE_URL = "/HouseConnect/Administrator";
 
     private static final Contact contact = ContactFactory.createContact(
             "admin@gmail.com", "0821234567", "0832345678", true, true,

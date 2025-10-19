@@ -20,7 +20,7 @@ public class ContactServiceImpl implements IContactService {
 
     @Override
     public Contact create(Contact contact) {
-        return contactRepository.save(contact);
+        return contactRepository.saveAndFlush(contact);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class ContactServiceImpl implements IContactService {
 
     @Override
     public Contact update(Contact contact) {
-        return contactRepository.save(contact);
+        return contactRepository.saveAndFlush(contact);
     }
 
     @Override

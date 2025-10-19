@@ -27,7 +27,7 @@ class LandLordControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private static final String BASE_URL = "http://localhost:8080/HouseConnect/Landlord";
+    private static final String BASE_URL = "/HouseConnect/Landlord";
 
     private static final Contact contact = ContactFactory.createContact(
             "landlord@example.com", "0721234567", "0731234567", true, false,

@@ -2,8 +2,12 @@ package co.za.cput.service.business.implementation;
 
 import co.za.cput.domain.business.Accommodation;
 import co.za.cput.domain.generic.Address;
+import co.za.cput.domain.generic.Contact;
+import co.za.cput.domain.users.Landlord;
 import co.za.cput.factory.business.AccommodationFactory;
 import co.za.cput.factory.generic.AddressFactory;
+import co.za.cput.factory.generic.ContactFactory;
+import co.za.cput.factory.user.LandlordFactory;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -11,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,6 +33,25 @@ class AccommodationServiceImplTest {
             "42", "Main Street", "Observatory", "Cape Town", 7925
     );
 
+    private final Contact landlordContact = ContactFactory.createContact(
+            "thabo.nkosi@example.com",
+            "0721234567",
+            "0837654321",
+            true,
+            true,
+            Contact.PreferredContactMethod.EMAIL
+    );
+
+    private final Landlord landlord = LandlordFactory.createLandlord(
+            "Thabo",
+            "Nkosi",
+            true,
+            LocalDate.now(),
+            "Password123",
+            landlordContact,
+            Collections.emptyList()
+    );
+
     private Accommodation accommodation1 = AccommodationFactory.createAccommodation(
             4200.00,                              // rent
             true,                                 // wifiAvailable
@@ -38,7 +62,7 @@ class AccommodationServiceImplTest {
             Accommodation.BathroomType.PRIVATE,   // bathroomType
             Accommodation.AccommodationStatus.AVAILABLE,
             address,
-            null,                                  // landlord (excluded for isolated test)
+            landlord,
             null            // bookings
     );
 
@@ -51,6 +75,9 @@ class AccommodationServiceImplTest {
         System.out.println("Created accommodation: " + created);
         accommodation_with_Id = created;
         assertNotNull(accommodation_with_Id);
+        assertNotNull(created.getLandlord());
+        assertNotNull(created.getLandlord().getLandlordID());
+        assertEquals(landlord.getLandlordFirstName(), created.getLandlord().getLandlordFirstName());
     }
 
     @Test
@@ -62,6 +89,8 @@ class AccommodationServiceImplTest {
         Accommodation read = accommodationService.read(accommodation_with_Id.getAccommodationID());
         assertNotNull(read);
         assertEquals(accommodation_with_Id.getAccommodationID(), read.getAccommodationID());
+        assertNotNull(read.getLandlord());
+        assertNotNull(read.getLandlord().getLandlordID());
         System.out.println("Read accommodation: " + read);
     }
 
@@ -75,12 +104,31 @@ class AccommodationServiceImplTest {
                 .copy(accommodation_with_Id)
                 .setRent(4800.00)
                 .setWifiAvailable(false)
+                .setLandlord(LandlordFactory.createLandlord(
+                        "Sibongile",
+                        "Dlamini",
+                        true,
+                        LocalDate.now(),
+                        "SecurePass1",
+                        ContactFactory.createContact(
+                                "sibongile.dlamini@example.com",
+                                "0731234567",
+                                "0847654321",
+                                true,
+                                true,
+                                Contact.PreferredContactMethod.PHONE
+                        ),
+                        Collections.emptyList()
+                ))
                 .build();
         accommodationService.update(updated);
 
         Accommodation readAfterUpdate = accommodationService.read(updated.getAccommodationID());
         assertEquals(4800.00, readAfterUpdate.getRent());
         assertFalse(readAfterUpdate.getIsWifiAvailable());
+        assertNotNull(readAfterUpdate.getLandlord());
+        assertNotNull(readAfterUpdate.getLandlord().getLandlordID());
+        assertEquals("Sibongile", readAfterUpdate.getLandlord().getLandlordFirstName());
         System.out.println("Updated accommodation: " + readAfterUpdate);
     }
 

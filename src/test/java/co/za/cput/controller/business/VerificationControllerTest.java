@@ -35,7 +35,7 @@ class VerificationControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private static final String BASE_URL = "http://localhost:8080/HouseConnect/Verification";
+    private static final String BASE_URL = "/HouseConnect/Verification";
 
     @Test
     void a_create() {

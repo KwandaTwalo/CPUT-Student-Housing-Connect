@@ -22,7 +22,7 @@ class AccommodationControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private static final String BASE_URL = "http://localhost:8080/HouseConnect/Accommodation";
+    private static final String BASE_URL = "/HouseConnect/Accommodation";
 
     private Address address = AddressFactory.createAddress(
             "42", "Main Street", "Observatory", "Cape Town", 7925

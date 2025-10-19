@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VerificationRepository extends JpaRepository<Verification, Long> {
-  
+    long countByVerificationStatus(Verification.VerificationStatus status);
 }

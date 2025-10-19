@@ -57,7 +57,7 @@ public class Accommodation {
     @JoinColumn(name = "address_ID", referencedColumnName = "addressID")
     private Address address;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "landLord_ID", referencedColumnName = "landLordID")
     @JsonBackReference("landlord-accommodation")
     private Landlord landlord;
@@ -81,55 +81,115 @@ public class Accommodation {
         this.accommodationStatus = builder.accommodationStatus;
         this.address = builder.address;
         this.landlord = builder.landlord;
-        this.bookings = builder.bookings;
+        this.bookings = builder.bookings != null ? builder.bookings : new ArrayList<>();
     }
 
     public Long getAccommodationID() {
         return accommodationID;
     }
 
+    public void setAccommodationID(Long accommodationID) {
+        this.accommodationID = accommodationID;
+    }
+
     public double getRent() {
         return rent;
+    }
+
+    public void setRent(double rent) {
+        this.rent = rent;
     }
 
     public RoomType getRoomType() {
         return roomType;
     }
 
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
+    }
+
     public AccommodationStatus getAccommodationStatus() {
         return accommodationStatus;
+    }
+
+    public void setAccommodationStatus(AccommodationStatus accommodationStatus) {
+        this.accommodationStatus = accommodationStatus;
     }
 
     public boolean getIsWifiAvailable() {
         return wifiAvailable;
     }
 
+    public boolean isWifiAvailable() {
+        return wifiAvailable;
+    }
+
+    public void setWifiAvailable(boolean wifiAvailable) {
+        this.wifiAvailable = wifiAvailable;
+    }
+
     public boolean getIsFurnished() {
         return furnished;
+    }
+
+    public boolean isFurnished() {
+        return furnished;
+    }
+
+    public void setFurnished(boolean furnished) {
+        this.furnished = furnished;
     }
 
     public double getDistanceFromCampus() {
         return distanceFromCampus;
     }
 
+    public void setDistanceFromCampus(double distanceFromCampus) {
+        this.distanceFromCampus = distanceFromCampus;
+    }
+
     public boolean getIsUtilitiesIncluded() {
         return utilitiesIncluded;
+    }
+
+    public boolean isUtilitiesIncluded() {
+        return utilitiesIncluded;
+    }
+
+    public void setUtilitiesIncluded(boolean utilitiesIncluded) {
+        this.utilitiesIncluded = utilitiesIncluded;
     }
 
     public BathroomType getBathroomType() {
         return bathroomType;
     }
 
+    public void setBathroomType(BathroomType bathroomType) {
+        this.bathroomType = bathroomType;
+    }
+
     public Address getAddress() {
         return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
     public Landlord getLandlord() {
         return landlord;
     }
 
+    public void setLandlord(Landlord landlord) {
+        this.landlord = landlord;
+    }
+
     public List<Booking> getBookings() {
         return bookings;
+    }
+
+    public void setBookings(List<Booking> bookings) {
+        this.bookings = bookings != null ? bookings : new ArrayList<>();
     }
 
     @Override
@@ -211,7 +271,7 @@ public class Accommodation {
             return this;
         }
 
-       public Builder setLandlord(Landlord landlord) {
+        public Builder setLandlord(Landlord landlord) {
             this.landlord = landlord;
             return this;
         }
@@ -240,6 +300,3 @@ public class Accommodation {
         }
     }
 }
-
-
-
