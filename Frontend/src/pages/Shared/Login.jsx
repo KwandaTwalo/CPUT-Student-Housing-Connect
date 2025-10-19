@@ -23,7 +23,7 @@ function Login({ defaultRole = "" }) {
       (resolvedRole) => {
         switch (resolvedRole) {
           case "student":
-            return "/student/search";
+            return "/student/dashboard";
           case "landlord":
             return "/landlord/dashboard";
           case "admin":

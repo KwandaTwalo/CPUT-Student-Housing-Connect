@@ -4,7 +4,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const defaultUnderlineColors = ["#0A4EAF", "#FF6700", "#C0C0C0", "#3A6EA5", "#004E98"];
 
-function AppName({ color = "#1a1a1a", iconColor = "#2563eb", underlinePalette }) {
+function AppName({ color = "#1a1a1a", iconColor = "#2563eb", underlinePalette, compact = false }) {
     const underlineColors = underlinePalette && underlinePalette.length > 0 ? underlinePalette : defaultUnderlineColors;
 
     return (
@@ -23,16 +23,17 @@ function AppName({ color = "#1a1a1a", iconColor = "#2563eb", underlinePalette })
                     fontWeight="bold"
                     sx={{
                         textTransform: "uppercase",
-                        letterSpacing: "0.25em",
+                        letterSpacing: compact ? "0.18em" : "0.25em",
                         fontFamily: "'Roboto', sans-serif",
                         userSelect: "none",
                         paddingBottom: "8px",
                         color,
+                        fontSize: compact ? "0.95rem" : undefined,
                         transition: "color 0.3s ease",
                         "&:hover": { color: iconColor },
                     }}
                 >
-                    STUDENT HOUSING CONNECT
+                    {compact ? "CPUT Housing" : "STUDENT HOUSING CONNECT"}
                 </Typography>
 
                 <Box
@@ -90,6 +91,7 @@ AppName.propTypes = {
     color: PropTypes.string,
     iconColor: PropTypes.string,
     underlinePalette: PropTypes.arrayOf(PropTypes.string),
+    compact: PropTypes.bool,
 };
 
 export default AppName;

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { FaCheckCircle, FaClock, FaEnvelope, FaPlusCircle, FaSearch, FaShieldAlt, FaUserPlus } from "react-icons/fa";
+import AdminNavigation from "../../../components/admin/AdminNavigation";
 
 const pageStyles = {
     minHeight: "100vh",
@@ -248,16 +249,18 @@ function AdminSignUp() {
     };
 
     return (
-        <div style={pageStyles}>
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "28px",
-                    maxWidth: "1200px",
-                    margin: "0 auto",
-                }}
-            >
+        <div className="admin-page-shell">
+            <AdminNavigation />
+            <main className="admin-page-content" style={pageStyles}>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "28px",
+                        maxWidth: "1200px",
+                        margin: "0 auto",
+                    }}
+                >
                 <header
                     style={{
                         display: "flex",
@@ -588,6 +591,7 @@ function AdminSignUp() {
                     </div>
                 </section>
             </div>
+            </main>
         </div>
     );
 }

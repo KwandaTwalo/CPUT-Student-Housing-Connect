@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { searchAccommodations } from "../../../services/accommodationService";
+import StudentNavigation from "../../../components/student/StudentNavigation";
 
 const initialFilters = {
     query: "",
@@ -458,8 +459,10 @@ function SearchAccommodation() {
     }, [sortedResults]);
 
     return (
-        <div style={styles.page}>
-            <section style={styles.hero}>
+        <div className="student-search-shell">
+            <StudentNavigation />
+            <div style={styles.page}>
+                <section style={styles.hero}>
                 <div style={styles.heroContent}>
                     <span style={styles.heroBadge}>Discover • Match • Move</span>
                     <h1 style={styles.title}>Your personalised CPUT housing hub</h1>
@@ -836,6 +839,7 @@ function SearchAccommodation() {
                         </div>
                     </aside>
                 </section>
+            </div>
             </div>
         </div>
     );

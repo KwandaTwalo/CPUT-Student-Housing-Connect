@@ -9,6 +9,7 @@ import {
     FaShieldAlt,
     FaUserTie,
 } from "react-icons/fa";
+import AdminNavigation from "../../../components/admin/AdminNavigation";
 
 const pageStyles = {
     minHeight: "100vh",
@@ -223,9 +224,9 @@ function VerifyLandlords() {
         );
     };
 
-    return (
-        <div>
-            <div style={pageStyles}>
+    <div className="admin-page-shell">
+        <AdminNavigation />
+        <main className="admin-page-content" style={pageStyles}>
                 <div style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gap: "28px" }}>
                     <header
                         style={{
@@ -625,9 +626,9 @@ function VerifyLandlords() {
                     </div>
                 )}
                 </div>
-            </div>
-        </div>
-    );
+        </main>
+    </div>
+);
 }
 
 export default VerifyLandlords;

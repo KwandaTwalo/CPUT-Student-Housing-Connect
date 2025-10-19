@@ -10,6 +10,7 @@ import {
     FaShieldAlt,
     FaWifi,
 } from "react-icons/fa";
+import AdminNavigation from "../../../components/admin/AdminNavigation";
 
 const pageStyles = {
     minHeight: "100vh",
@@ -225,8 +226,9 @@ function VerifyListings() {
     const approvedCount = listings.filter((listing) => listing.status === "Approved").length;
 
     return (
-        <div>
-            <div style={pageStyles}>
+        <main className="admin-page-shell">
+            <AdminNavigation />
+            <main className="admin-page-content" style={pageStyles}>
                 <div style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gap: "28px" }}>
                     <header
                         style={{
@@ -646,7 +648,7 @@ function VerifyListings() {
                     </div>
                 )}
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

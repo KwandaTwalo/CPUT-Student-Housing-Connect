@@ -13,6 +13,7 @@ import {
     FaUsers,
 } from "react-icons/fa";
 import { fetchDashboardOverview } from "../../../services/adminService";
+import AdminNavigation from "../../../components/admin/AdminNavigation";
 
 
 const pageStyles = {
@@ -243,8 +244,10 @@ function Dashboard() {
     );
 
     return (
-        <div style={pageStyles}>
-            <div style={{ maxWidth: "1220px", margin: "0 auto", display: "grid", gap: "28px" }}>
+        <div className="admin-page-shell">
+            <AdminNavigation />
+            <main className="admin-page-content" style={pageStyles}>
+                <div style={{ maxWidth: "1220px", margin: "0 auto", display: "grid", gap: "28px" }}>
                 <header
                     style={{
                         display: "flex",
@@ -577,9 +580,9 @@ function Dashboard() {
                         </div>
                     </section>
                 </div>
-            </div>
-            </div>
-            );
+            </main>
+        </div>
+);
 }
 
 const overviewGridStyles = {

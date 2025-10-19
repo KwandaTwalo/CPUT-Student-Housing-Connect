@@ -26,6 +26,8 @@ import AccommodationDetails from "./pages/Student/AccomodationDetails/Accommodat
 import MyApplications from "./pages/Student/MyApplications/MyApplications";
 import SubmitReview from "./pages/Student/SubmitReview/SubmitReview";
 import StudentSignUp from "./pages/Student/StudentSignUp/StudentSignUp";
+import StudentDashboard from "./pages/Student/Dashboard/StudentDashboard";
+import StudentProfile from "./pages/Student/Profile/StudentProfile";
 
 function App() {
   return (
@@ -70,8 +72,15 @@ function App() {
               </ProtectedRoute>
             }
         />
-        <Route path="/admin/signup" element={<AdminSignUp />} />
-        <Route
+          <Route
+              path="/admin/signup"
+              element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                      <AdminSignUp />
+                  </ProtectedRoute>
+              }
+          />
+          <Route
             path="/admin/verify-landlords"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
@@ -90,11 +99,19 @@ function App() {
 
         {/* Student routes */}
         <Route
-            path="/student/search"
+            path="/student/dashboard"
             element={
-              <ProtectedRoute allowedRoles={["student"]}>
-                <SearchAccommodation />
-              </ProtectedRoute>
+                <ProtectedRoute allowedRoles={["student"]}>
+                    <StudentDashboard />
+                </ProtectedRoute>
+            }
+        />
+          <Route
+              path="/student/search"
+              element={
+                  <ProtectedRoute allowedRoles={["student"]}>
+                      <SearchAccommodation />
+                  </ProtectedRoute>
             }
         />
         <Route
@@ -121,6 +138,14 @@ function App() {
               </ProtectedRoute>
             }
         />
+          <Route
+              path="/student/profile"
+              element={
+                  <ProtectedRoute allowedRoles={["student"]}>
+                      <StudentProfile />
+                  </ProtectedRoute>
+              }
+          />
 
       </Routes>
     </Router>
